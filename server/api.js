@@ -43,6 +43,20 @@ router.post("/initsocket", (req, res) => {
 // | write your API methods below!|
 // |------------------------------|
 
+
+
+
+router.post("/newUser", (req,res) => {
+  let newName = req.body.newName;
+  let user = new User({
+    name: newName,
+    typingSpeed: 0,
+    roomid: "",
+  });
+  user.save();
+  res.send({newName: newName});
+});
+
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);
