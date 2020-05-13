@@ -10,6 +10,9 @@ import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
 
+import Cookies from 'universal-cookie';
+const cookies = new Cookies()
+
 
 /**
  * Define the "App" component as a class.
@@ -50,8 +53,6 @@ class App extends Component {
     return (
       <>
         <Topbar
-          handleLogin={this.handleLogin}
-          handleLogout={this.handleLogout}
           userId={this.state.userId}
         />
         <Router>

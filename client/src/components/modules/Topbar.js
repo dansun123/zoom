@@ -24,19 +24,9 @@ class Topbar extends Component {
           <div className = "djzoomer">DJ-Zoomer</div>
           <div className = "login-logout">
             {this.props.userId ? (
-              <GoogleLogout
-                clientId={GOOGLE_CLIENT_ID}
-                buttonText="Logout"
-                onLogoutSuccess={this.props.handleLogout}
-                onFailure={(err) => console.log(err)}
-              />
+              "yes"
             ) : (
-              <GoogleLogin
-                clientId={GOOGLE_CLIENT_ID}
-                buttonText="Login"
-                onSuccess={this.props.handleLogin}
-                onFailure={(err) => console.log(err)}
-              />
+              "no"
             )}
           </div>
         </div>
