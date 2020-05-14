@@ -53,7 +53,6 @@ router.post("/newUser", (req,res) => {
   let user = new User({
     name: newName,
     roomID: undefined,
-    inGame: false
   });
   user.save();
   res.send({newName: newName});
@@ -61,11 +60,6 @@ router.post("/newUser", (req,res) => {
 
 
 
-router.get("/game", (req, res) => {
-  Game.findOne({roomID: req.query.roomID}).then((game) => {
-    res.send(game)
-  });
-});
 
 router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 
@@ -91,12 +85,25 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
   })
 });
 
+// sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
   User.findById(req.user._id).then((user) => {
     user.roomID = req.body.roomID;
     user.save().then(() => {
       socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
-      res.send({});
+
+
+      userList = []
+      User.find({roomID: user.roomID}).then((users) => {
+        users.forEach((user2) => {
+          userList.push({userId: user2._id, userName: user2.userName})
+          if(userList.length === users.length) {
+            res.send(userList);
+          }
+        })
+      })
+
+      
     })
   })
 });
@@ -107,10 +114,8 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
   User.find({}).then((users) => {
     users.forEach((user) => {
       if(user.roomID.equals(req.user.roomID)) {
-        user.inGame = true
         gameData.push({userID: user._id, userName: user.userName, score: 0, lyrics: []})
-        user.save().then(() => {
-          if(gameData.length === users.length) {
+        if(gameData.length === users.length) {
 
             // create game
 
@@ -153,7 +158,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
 
 
           }
-        })
+       
       }
     })
   })

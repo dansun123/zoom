@@ -27,9 +27,8 @@ function getOrCreateUser(user) {
     const newUser = new User({
       name: user.name,
       googleid: user.sub,
-      userName: "Guest",
+      userName: user.name.split(" ")[0],
       roomID: "Lobby",
-      inGame: false,
     });
 
     return newUser.save();
