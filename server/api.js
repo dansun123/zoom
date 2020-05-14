@@ -150,7 +150,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             if (!error && response.statusCode == 200) {
              
               let songURL = JSON.parse(body).results[0].previewUrl
-              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songURL: songURL, endTime: endTime, startTime: startTime})
+              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
 
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {

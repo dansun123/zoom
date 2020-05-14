@@ -49,7 +49,8 @@ class Room extends Component {
             endTime: new Date(),
             startTime: new Date(),
             songURL: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a",
-            timeToStart: 3
+            timeToStart: 3,
+            gameData: []
         }
     }
     componentDidMount() {
@@ -82,7 +83,7 @@ class Room extends Component {
         socket.on("startTimer", (data) => {
             if(this.state.roomID !== data.roomID) return;
 
-            this.setState({status: "timer", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime})
+            this.setState({status: "timer", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime, gameData: this.state.gameData})
             setInterval(() => {this.setState({timeToStart: Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000)+1.0)})}, 1000)
 
         })
@@ -135,15 +136,28 @@ class Room extends Component {
             </>
         }
         else if(this.state.status === "timer") {
+            body = 
+            <>
             <h1>Game starting in {this.state.timeToStart} seconds</h1>
+            <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
+            </>
 
         }
         else if(this.state.status === "inProgress") {
+            body = 
+            <>
             <Music url = {this.state.songURL}></Music>
+            
+            <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
+            </>
 
         }
         else if(this.state.status === "finished") {
+            body = 
+            <>
             <h1>Results</h1>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID})}}>Start New Game</Button>
+            </>
 
         }
         else {
