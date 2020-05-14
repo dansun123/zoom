@@ -34,7 +34,6 @@ class Room extends Component {
         }) 
         socket.on("someoneJoinedRoom", (user) => {
             let newUsers  = this.state.users;
-            alert("boo");
             if(!containsObject(user, newUsers) && user.userId !== this.props.userId) {
                 newUsers.push(user)
                 this.setState({
@@ -49,6 +48,7 @@ class Room extends Component {
             <>
                 <button onClick = {()=>{console.log(this.state)}}>log room state</button>
                 <h3>RoomID: {this.state.roomID}</h3>
+                <h3>Invite Link: {"https://djzoomer.herokuapp.com/"+this.state.roomID}</h3>
                 <img src = {silent}></img>
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
             </>
