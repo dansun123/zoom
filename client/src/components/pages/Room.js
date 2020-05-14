@@ -82,7 +82,14 @@ class Room extends Component {
                 <br></br>
                 <br></br>
                 <br></br><br></br>
-                <Box height={"360px"} style={{overflow: "scroll" }}>
+                <Box 
+                    height={"360px"} 
+                    style={{overflow: "scroll" }} 
+                    position ={"absolute"} 
+                    top={"70px"}
+                    right={"30px"}
+                >
+                    <ListItem><ListItemText primary={"Players"}/></ListItem>
                     <List>
                     {connectedUsers}
                     </List>
