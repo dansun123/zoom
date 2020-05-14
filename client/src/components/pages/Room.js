@@ -11,6 +11,8 @@ import Select from "@material-ui/core/Select";
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from "@material-ui/core/Dialog";
 import List from "@material-ui/core/List";
+import {CopyToClipboard} from 'react-copy-to-clipboard';
+
 
 import Box from "@material-ui/core/Box";
 import Slide from '@material-ui/core/Slide';
@@ -154,8 +156,15 @@ class Room extends Component {
         return (
             <>
                 <button onClick = {()=>{console.log(this.state)}}>log room state</button>
-                <h3>Invite Link: {window.location.href}</h3>
-                {/*<img src = {silent}></img>*/}
+                <h3> 
+                    Invite Link: {window.location.href}
+                    <CopyToClipboard text={window.location.href}
+                        onCopy={() => this.setState({copied: true})}>
+                        <button>Copy to clipboard</button>
+                    </CopyToClipboard>
+                    {this.state.copied ? <span style={{color: 'red'}}>Copied.</span> : null}  
+                 </h3>
+                 {/*<img src = {silent}></img>*/}
                 {body}
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
                 
