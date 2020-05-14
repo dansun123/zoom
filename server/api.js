@@ -44,10 +44,14 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 
-
+router.post("/createRoom", (req,res) => {
+  let roomID = Math.floor(Math.random() * (999999 - 100000) + 100000)
+  
+});
 
 router.post("/newUser", (req,res) => {
   let newName = req.body.newName;
+  User.find({name: newName})
   let user = new User({
     name: newName,
     typingSpeed: 0,

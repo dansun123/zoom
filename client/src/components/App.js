@@ -85,6 +85,7 @@ class App extends Component {
     post('api/newUser', query).then((res) => {
         this.setState({name: res.newName});
         cookies.set('name', res.newName, {path:'/'});
+        cookies.set('id', res.id, {path:'/'})
     })
     event.preventDefault();
   }
@@ -94,8 +95,10 @@ class App extends Component {
     post("/api/logout");
   };
 
-  createGame = () => {
-
+  createRoom = () => {
+    post('api/createRoom').then((res) => {
+      window.location.href = "http://localhost:5000/"+res.id;
+    })
   }
 
   render() {
@@ -114,7 +117,7 @@ class App extends Component {
                 <input type="submit" value="Submit"/>
             </form>
         </div>
-        <button onClick = {this.createGame}>Create Game</button>
+        <button onClick = {this.createRoom}>Create Room</button>
         <Router>
           <div>
             <Switch>
