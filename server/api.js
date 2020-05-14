@@ -54,12 +54,45 @@ router.post("/newUser", (req,res) => {
   User.find({name: newName})
   let user = new User({
     name: newName,
-    typingSpeed: 0,
-    roomid: "",
+    roomID: undefined,
+    inGame: false
   });
   user.save();
   res.send({newName: newName});
 });
+
+
+
+router.get("/game", auth.ensureLoggedIn, (req, res) => {
+  Game.findOne({roomID: req.query.roomID}).then((game) => {
+    res.send(game)
+  });
+});
+
+router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
+  res.send({});
+});
+
+router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
+  res.send({});
+});
+
+
+router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
+  res.send({});
+});
+
+
+router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
+  res.send({});
+});
+
+
+router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
+  res.send({});
+});
+
+
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {

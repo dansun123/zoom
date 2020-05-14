@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 
 const GameSchema = new mongoose.Schema({
-  songs: Object,
+  songID: String,
+  endTime: Date,
+  gameData: Object,
+  roomID: String
 });
 
 // compile model from schema
