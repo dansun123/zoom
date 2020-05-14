@@ -3,6 +3,7 @@ import Chat from '../modules/Chat.js';
 
 import "../../utilities.css";
 import "./Main.css";
+import { get, post } from "../../utilities";
 
 //contains public chat and a create-room button
 
@@ -15,6 +16,7 @@ class Main extends Component {
 
   componentDidMount() {
     // remember -- api calls go here!
+    post("/api/setRoomID", {roomID: "Lobby"})
   }
 
   render() {

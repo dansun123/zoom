@@ -68,21 +68,21 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
   let roomID = Math.floor(Math.random() * (max-min) + min)
   // what if its already taken :o
 
-  Room.findOne({roomID: roomID}).then((room) => {
-    if(room) {
-      User.findById(req.user._id).then((user) => {
-        user.roomID = roomID;
-        user.save().then(() => {
+  // Room.findOne({roomID: roomID}).then((room) => {
+  //   if(room) {
+  //     User.findById(req.user._id).then((user) => {
+  //       user.roomID = roomID;
+  //       user.save().then(() => {
           res.send({id: roomID})
-        })
-      })
-    } else {
-      const newRoom = new Room({
-        roomID: roomID,
-      })
-      newRoom.save();
-    }
-  })
+  //       })
+  //     })
+  //   } else {
+  //     const newRoom = new Room({
+  //       roomID: roomID,
+  //     })
+  //     newRoom.save();
+  //   }
+  // })
 });
 
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
@@ -91,7 +91,6 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
     user.roomID = req.body.roomID;
     user.save().then(() => {
       socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
-
 
       userList = []
       User.find({roomID: user.roomID}).then((users) => {

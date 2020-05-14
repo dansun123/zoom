@@ -48,13 +48,7 @@ class App extends Component {
       userId: undefined,
       name2: undefined,
       name: undefined,
-      chat: [{
-        name: "DAN",
-        message: "hi",
-        gameID: "Lobby",
-        timestamp: new Date(),
-        systemMessage: false,
-      }]
+      chat: []
     };
 
     // if (cookies.get('name')) {
@@ -127,6 +121,7 @@ class App extends Component {
               <Room 
                 path = "/:id" 
                 chat = {this.state.chat}
+                userId={this.state.userId}
                 updateState={this.updateState}
               /> />
               <NotFound default />
@@ -152,6 +147,7 @@ class App extends Component {
     )
     return (
       <>
+        <button onClick = {()=>{console.log(this.state)}}>log app state</button>
         {this.state.userId ? privateContent: publicContent}
       </>
     );

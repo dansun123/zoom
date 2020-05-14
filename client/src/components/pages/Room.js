@@ -8,28 +8,49 @@ import "../../utilities.css";
 import "./Main.css";
 import { withRouter } from "react-router-dom";
 import { get, post } from "../../utilities";
+import { socket } from "../../client-socket.js";
 
+function containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i].userId === obj.userId) {
+            return true;
+        }
+    }
+
+    return false;
+}
 class Room extends Component {
     constructor(props) {
         super(props);
         this.state = {
             roomID: this.props.computedMatch.params.id,
-            users: [{_id: "2342", name: "Dan"}]
+            users: []
         }
     }
     componentDidMount() {
-        post("/api/joinRoom", {roomID: roomID}).then((res) => {
-
+        post("/api/joinRoom", {roomID: this.state.roomID}).then((userList) => {
+            this.setState({users: userList})
         }) 
+        socket.on("someoneJoinedRoom", (user) => {
+            let newUsers  = this.state.users;
+            alert("boo");
+            if(!containsObject(user, newUsers) && user.userId !== this.props.userId) {
+                newUsers.push(user)
+                this.setState({
+                    users: newUsers
+                })
+            }
+        })
     }
 
     render() {
         return (
             <>
+                <button onClick = {()=>{console.log(this.state)}}>log room state</button>
                 <h3>RoomID: {this.state.roomID}</h3>
                 <img src = {silent}></img>
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
-
             </>
         );
         
