@@ -127,7 +127,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
     let counter = 0
     users.forEach((user) => {
       counter += 1
-      if(user.roomID === req.user.roomID) {
+      if(user.roomID === req.body.roomID) {
         gameData.push({userID: user._id, userName: user.userName, score: 0, lyrics: []})
       }
 
@@ -140,7 +140,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
           songID: "1511562938",
           endTime: endTime,
           gameData: gameData,
-          roomID: req.user.roomID,
+          roomID: req.body.roomID,
           status: "timer" // inProgress, timer, finished. 
         });
         game.save().then(() => {
@@ -150,13 +150,13 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             if (!error && response.statusCode == 200) {
              
               let songURL = JSON.parse(body).results[0].previewUrl
-              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id, songURL: songURL, endTime: endTime, startTime: startTime})
+              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songURL: songURL, endTime: endTime, startTime: startTime})
 
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {
                   newGame.status = "inProgress"
                   newGame.save().then(()=> {
-                    socket.getIo().emit("inProgress", {roomID: req.user.roomID, gameID: game._id})
+                    socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
                   })
                 })
                
@@ -166,7 +166,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                 Game.findById(game._id).then((newGame) => {
                   newGame.status = "finished"
                   newGame.save().then(()=> {
-                    socket.getIo().emit("finished", {roomID: req.user.roomID, gameID: game._id, gameData: game.gameData})
+                    socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: game.gameData})
                   })
                 })
               }, 33000)
