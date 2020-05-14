@@ -21,7 +21,7 @@ class Chat extends React.Component {
   handleSubmit = event => {
     event.preventDefault();
     // this.sendMessage();
-    post("api/chat", {message: this.state.messageText, gameID: this.props.gameID}).then(() => {
+    post("api/chat", {message: this.state.messageText, roomID: this.props.roomID}).then(() => {
       this.setState({ messageText: ""})
     });
     console.log('submitting message')
@@ -47,7 +47,7 @@ class Chat extends React.Component {
     }
     //console.log(this.props.messages)
     let height="300px"
-    if(this.props.gameID !== "Lobby") height="580px"
+    if(this.props.roomID !== "Lobby") height="580px"
     let crop = (str) => {
       if(str.length > 140) {
         str = str.substring(0, 140)
@@ -60,7 +60,7 @@ class Chat extends React.Component {
       <Box height={height}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "scroll", color: "black", display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
           
             <List>
-              {this.getLastFew(50, this.props.messages.filter((message) => {return (message.gameID === this.props.gameID)})).map((message) => {
+              {this.getLastFew(50, this.props.messages.filter((message) => {return (message.roomID === this.props.roomID)})).map((message) => {
                 let text = <><div style={{display: "inline"}}>{"["+(addZero(new Date(message.timestamp).getHours())) + ":" + (addZero(new Date(message.timestamp).getMinutes())) + "] "}</div><div style={{color: "#6c57f5", display: "inline", fontWeight: "900"}}>{message.name}</div><div style={{display: "inline"}}>{": " + crop(message.message)}</div></>
                 if(message.systemMessage) {
                   text = message.message

@@ -28,8 +28,8 @@ function getOrCreateUser(user) {
       name: user.name,
       googleid: user.sub,
       userName: "Guest",
+      roomID: "Lobby",
       inGame: false,
-      typingSpeed: 0,
     });
 
     return newUser.save();

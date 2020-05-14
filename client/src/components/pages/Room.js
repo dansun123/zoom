@@ -7,14 +7,13 @@ import Chat from '../modules/Chat.js';
 import "../../utilities.css";
 import "./Main.css";
 import { withRouter } from "react-router-dom";
-import { get } from "mongoose";
+import { get, post } from "../../utilities";
 
 class Room extends Component {
     constructor(props) {
         super(props);
         this.state = {
             roomid: this.props.computedMatch.params.id,
-            gameID: "haha"
         }
     }
     componentDidMount() {
@@ -26,6 +25,8 @@ class Room extends Component {
             <>
                 <h3>RoomID: {this.state.roomid}</h3>
                 <img src = {silent}></img>
+                <Chat messages={this.props.chat} roomID={this.state.roomID} />
+
             </>
         );
         

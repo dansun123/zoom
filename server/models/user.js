@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
   googleid: String,
   userName: String,
   inGame: Boolean,
-  typingSpeed: Number,
+  roomID: String,
 });
 
 // compile model from schema

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Chat from '../modules/Chat.js';
 
 import "../../utilities.css";
 import "./Main.css";
@@ -9,7 +10,7 @@ class Main extends Component {
   constructor(props) {
     super(props);
     // Initialize Default State
-    this.state = {};
+    this.state = {roomID: "Lobby"};
   }
 
   componentDidMount() {
@@ -19,12 +20,8 @@ class Main extends Component {
   render() {
     return (
       <>
-        <br></br>
-        <br></br>
-        <br></br>
-        <div>Main</div>
-        <button onClick = {this.props.createRoom}>Create Room</button>
-        {/* <Chat></Chat> */}
+        <button className = "button" onClick = {this.props.createRoom}>Create Room</button>
+        <Chat messages={this.props.chat} roomID={this.state.roomID} />
       </>
     );
   }

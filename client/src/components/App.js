@@ -21,19 +21,20 @@ import { get, post } from "../utilities";
 
 // import Cookies from 'universal-cookie';
 // const cookies = new Cookies()
+// handleChangeName = (event) => {
+  //   this.setState({name2: event.target.value});
+  //   event.preventDefault();
+  // }
 
-
-function Child() {
-  // We can use the `useParams` hook here to access
-  // the dynamic pieces of the URL.
-  let { id } = useParams();
-
-  return (
-    <div>
-      <h3>ID: {id}</h3>
-    </div>
-  );
-} 
+  // handleSubmit = (event) => {
+  //   alert('A name was submitted: ' + this.state.name2);
+  //   let query = {newName: this.state.name2, oldName: this.state.name}
+  //   post('api/newUser', query).then((res) => {
+  //       this.setState({name: res.newName});
+  //       cookies.set('name', res.newName, {path:'/'});
+  //   })
+  //   event.preventDefault();
+  // }
 
 
 /**
@@ -47,6 +48,13 @@ class App extends Component {
       userId: undefined,
       name2: undefined,
       name: undefined,
+      chat: [{
+        name: "DAN",
+        message: "hi",
+        gameID: "Lobby",
+        timestamp: new Date(),
+        systemMessage: false,
+      }]
     };
 
     // if (cookies.get('name')) {
@@ -62,6 +70,16 @@ class App extends Component {
         this.setState({ userId: user._id, name:user.name });
       }
     });
+    // get('/api/get_chat').then((chat) => {
+    //   this.setState({chat: chat})
+    // });
+
+    // socket.on('chat', (messages) => {
+
+    //   this.setState({
+    //     chat: messages
+    //   })
+    // })
   }
 
   handleLogin = (res) => {
@@ -73,21 +91,6 @@ class App extends Component {
     });
   };
 
-  // handleChangeName = (event) => {
-  //   this.setState({name2: event.target.value});
-  //   event.preventDefault();
-  // }
-
-  // handleSubmit = (event) => {
-  //   alert('A name was submitted: ' + this.state.name2);
-  //   let query = {newName: this.state.name2, oldName: this.state.name}
-  //   post('api/newUser', query).then((res) => {
-  //       this.setState({name: res.newName});
-  //       cookies.set('name', res.newName, {path:'/'});
-  //   })
-  //   event.preventDefault();
-  // }
-
   handleLogout = () => {
     this.setState({ userId: undefined });
     post("/api/logout");
@@ -95,9 +98,14 @@ class App extends Component {
 
   createRoom = () => {
     post('api/createNewRoom').then((res) => {
+      
       window.location.href = "http://localhost:5000/"+res.id;
     })
   }
+
+  updateState = (state) => {
+    this.setState(state);
+  };
 
   render() {
     let privateContent = (
@@ -107,7 +115,6 @@ class App extends Component {
           name = {this.state.name}
           handleLogin={this.handleLogin}
           handleLogout={this.handleLogout}
-          userId={this.state.userId}
         />
         <Router>
           <div>
@@ -118,9 +125,11 @@ class App extends Component {
                 handleLogout={this.handleLogout}
                 userId={this.state.userId}
                 createRoom = {this.createRoom}
+                chat = {this.state.chat}
               />
               <Room 
                 path = "/:id" 
+                chat = {this.state.chat}
               /> />
               <NotFound default />
             </Switch>
@@ -136,7 +145,6 @@ class App extends Component {
             name = {this.state.name}
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
-            userId={this.state.userId}
         />
         <div>
           Memorize the lyrics to your favorite songs on the Billboard Top 500 hits

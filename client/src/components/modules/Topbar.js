@@ -22,7 +22,7 @@ class Topbar extends Component {
       <>
         <div className = "topbar">
           <div className = "djzoomer">DJ-Zoomer</div>
-          <div className = "welcome">Hey {this.props.name}</div>
+          <div className = "welcome">Welcome {this.props.name}</div>
           <div className = "login">
             {this.props.userId ? (
               <GoogleLogout
