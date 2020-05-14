@@ -120,7 +120,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             // create game
 
             const game = new Game({
-              songID: "1",
+              songID: "1511562938",
               endTime: new Date(d.getTime() + 33*1000),
               gameData: gameData,
               roomID: req.user.roomID,
