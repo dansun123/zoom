@@ -8,7 +8,7 @@
 */
 
 const express = require("express");
-
+var request = require('request');
 // import models so we can interact with the database
 const User = require("./models/user");
 const Game = require("./models/game");
@@ -138,19 +138,27 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
       counter += 1
       if(user.roomID === req.user.roomID) {
         gameData.push({userID: user._id, userName: user.userName, score: 0, lyrics: []})
-        if(counter === users.length) {
+      }
 
-            // create game
+      if(counter === users.length) {
 
-            const game = new Game({
-              songID: "1511562938",
-              endTime: new Date(d.getTime() + 33*1000),
-              gameData: gameData,
-              roomID: req.user.roomID,
-              status: "timer" // inProgress, timer, finished. 
-            });
-            game.save().then(() => {
-              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id, songID: game.songID})
+        // create game
+
+        const game = new Game({
+          songID: "1511562938",
+          endTime: new Date((new Date()).getTime() + 33*1000),
+          gameData: gameData,
+          roomID: req.user.roomID,
+          status: "timer" // inProgress, timer, finished. 
+        });
+        game.save().then(() => {
+          // API Get
+          
+          request('https://itunes.apple.com/search?term=Super%20Bass&entity=song&limit=1', (error, response, body) => {
+            if (!error && response.statusCode == 200) {
+              let songURL = body["results"][0]["previewUrl"]
+              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id, songURL: songURL})
+
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {
                   newGame.status = "inProgress"
@@ -169,19 +177,21 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                   })
                 })
               }, 33000)
-
-              
-            })
-
-
-
-
-
-
+    
+            }
+          })
+          
+          
+          
+        })
 
 
-          }
-       
+
+
+
+
+
+
       }
     })
   })

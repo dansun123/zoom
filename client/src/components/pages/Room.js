@@ -113,6 +113,7 @@ class Room extends Component {
             <>
             <h1>Waiting to Start</h1> 
             <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
+            <Button fullWidth onClick={() => {post("/api/startGame")}}>Start Game</Button>
             </>
         }
         else if(this.state.status === "timer") {
