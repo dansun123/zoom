@@ -70,16 +70,14 @@ class App extends Component {
         this.setState({ userId: user._id, name:user.name });
       }
     });
-    // get('/api/get_chat').then((chat) => {
-    //   this.setState({chat: chat})
-    // });
 
-    // socket.on('chat', (messages) => {
-
-    //   this.setState({
-    //     chat: messages
-    //   })
-    // })
+    socket.on('newMessage', (message) => {
+      let newChat  = this.state.chat;
+      newChat.push(message)
+      this.setState({
+        chat: newChat
+      })
+    })
   }
 
   handleLogin = (res) => {

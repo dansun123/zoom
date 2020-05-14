@@ -86,14 +86,7 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
       const newRoom = new Room({
         roomID: roomID,
       })
-      newRoom.save().then(() => {
-        User.findById(req.user._id).then((user) => {
-          user.roomID = roomID;
-          user.save().then(() => {
-            res.send({id: roomID})
-          })
-        })
-      });
+      newRoom.save();
     }
   })
 });
@@ -105,7 +98,6 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
       socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
       res.send({});
     })
-    
   })
 });
 
@@ -204,6 +196,7 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
 
   res.send({});
 });
+
 
 router.post("/setRoomID", auth.ensureLoggedIn, (req, res) => {
   User.findById(req.user._id).then((user) => {
