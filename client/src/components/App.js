@@ -102,7 +102,8 @@ class App extends Component {
   };
 
   render() {
-    let privateContent = (
+    let privateContent = this.state.isLoading ? <h1>Loading...</h1> : 
+      (
       <>
         <Topbar
           userId={this.state.userId}
@@ -154,11 +155,6 @@ class App extends Component {
       </>
     )
     
-    if(this.state.isLoading) {
-      return <>
-      <h1>Loading...</h1>
-      </>
-    }
 
     return (
       <>
