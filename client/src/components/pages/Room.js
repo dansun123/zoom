@@ -97,6 +97,7 @@ class Room extends Component {
     render() {
         if(this.state.isLoading) {
             return <>
+            <button onClick = {()=>{console.log(this.state)}}>log room state</button>
             <h1>Loading...</h1>
             </>
         }
@@ -122,7 +123,7 @@ class Room extends Component {
             <>
             <h1>Waiting to Start</h1> 
             <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
-            <Button fullWidth onClick={() => {post("/api/startGame")}}>Start Game</Button>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID})}}>Start Game</Button>
             </>
         }
         else if(this.state.status === "timer") {
