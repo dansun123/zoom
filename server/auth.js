@@ -27,6 +27,9 @@ function getOrCreateUser(user) {
     const newUser = new User({
       name: user.name,
       googleid: user.sub,
+      userName: "Guest",
+      inGame: false,
+      typingSpeed: 0,
     });
 
     return newUser.save();

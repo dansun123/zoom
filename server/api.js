@@ -66,7 +66,7 @@ router.get("/game", auth.ensureLoggedIn, (req, res) => {
 
 router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
 
-  let min = 1000000
+  let min = 100000
   let max = min*10-1
   let roomID = Math.floor(Math.random() * (max-min) + min)
   
@@ -78,8 +78,6 @@ router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
       })
       
     })
-    
-
   
 });
 

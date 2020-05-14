@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import sound from "../images/RadioWaves.png";
-
 
 import "../../utilities.css";
 import "./Main.css";
+
+//contains public chat and a create-room button
 
 class Main extends Component {
   constructor(props) {
@@ -19,10 +19,12 @@ class Main extends Component {
   render() {
     return (
       <>
+        <br></br>
+        <br></br>
+        <br></br>
         <div>Main</div>
         <button onClick = {this.props.createRoom}>Create Room</button>
-        <img src = {sound}></img>
-
+        {/* <Chat></Chat> */}
       </>
     );
   }

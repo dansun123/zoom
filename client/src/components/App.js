@@ -11,6 +11,7 @@ import {
 import NotFound from "./pages/NotFound.js";
 import Main from "./pages/Main.js";
 import Topbar from "./modules/Topbar.js";
+import Room from "./pages/Room.js";
 
 import "../utilities.css";
 
@@ -18,8 +19,8 @@ import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
 
-import Cookies from 'universal-cookie';
-const cookies = new Cookies()
+// import Cookies from 'universal-cookie';
+// const cookies = new Cookies()
 
 
 function Child() {
@@ -48,19 +49,17 @@ class App extends Component {
       name: undefined,
     };
 
-    if (cookies.get('name')) {
-      this.state.name = cookies.get('name');
-    }
+    // if (cookies.get('name')) {
+    //   this.state.name = cookies.get('name');
+    // }
 
-    this.handleChangeName = this.handleChangeName.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   componentDidMount() {
     get("/api/whoami").then((user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
-        this.setState({ userId: user._id });
+        this.setState({ userId: user._id, name:user.name });
       }
     });
   }
@@ -69,25 +68,25 @@ class App extends Component {
     console.log(`Logged in as ${res.profileObj.name}`);
     const userToken = res.tokenObj.id_token;
     post("/api/login", { token: userToken }).then((user) => {
-      this.setState({ userId: user._id });
+      this.setState({ userId: user._id , name: user.name});
       post("/api/initsocket", { socketid: socket.id });
     });
   };
 
-  handleChangeName(event) {
-    this.setState({name2: event.target.value});
-    event.preventDefault();
-  }
+  // handleChangeName = (event) => {
+  //   this.setState({name2: event.target.value});
+  //   event.preventDefault();
+  // }
 
-  handleSubmit(event) {
-    alert('A name was submitted: ' + this.state.name2);
-    let query = {newName: this.state.name2, oldName: this.state.name}
-    post('api/newUser', query).then((res) => {
-        this.setState({name: res.newName});
-        cookies.set('name', res.newName, {path:'/'});
-    })
-    event.preventDefault();
-  }
+  // handleSubmit = (event) => {
+  //   alert('A name was submitted: ' + this.state.name2);
+  //   let query = {newName: this.state.name2, oldName: this.state.name}
+  //   post('api/newUser', query).then((res) => {
+  //       this.setState({name: res.newName});
+  //       cookies.set('name', res.newName, {path:'/'});
+  //   })
+  //   event.preventDefault();
+  // }
 
   handleLogout = () => {
     this.setState({ userId: undefined });
@@ -101,21 +100,15 @@ class App extends Component {
   }
 
   render() {
-    return (
+    let privateContent = (
       <>
         <Topbar
           userId={this.state.userId}
           name = {this.state.name}
+          handleLogin={this.handleLogin}
+          handleLogout={this.handleLogout}
+          userId={this.state.userId}
         />
-        <div>
-            <form onSubmit={this.handleSubmit}>
-                <label>
-                Name:
-                <input type="text" value={this.state.name2} onChange={this.handleChangeName} />
-                </label>
-                <input type="submit" value="Submit"/>
-            </form>
-        </div>
         <Router>
           <div>
             <Switch>
@@ -126,11 +119,34 @@ class App extends Component {
                 userId={this.state.userId}
                 createRoom = {this.createRoom}
               />
-              <Route path="/:id" children={<Child />} />
+              <Room 
+                path = "/:id" 
+              /> />
               <NotFound default />
             </Switch>
           </div>  
         </Router>
+      </>
+    );
+
+    let publicContent = (
+      <>
+        <Topbar
+            userId={this.state.userId}
+            name = {this.state.name}
+            handleLogin={this.handleLogin}
+            handleLogout={this.handleLogout}
+            userId={this.state.userId}
+        />
+        <div>
+          Memorize the lyrics to your favorite songs on the Billboard Top 500 hits
+          and improve your typing speed while your'e at it! Log in to play.
+        </div>
+      </>
+    )
+    return (
+      <>
+        {this.state.userId ? privateContent: publicContent}
       </>
     );
   }
