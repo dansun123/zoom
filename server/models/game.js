@@ -3,7 +3,11 @@ const mongoose = require("mongoose");
 const GameSchema = new mongoose.Schema({
   songID: String,
   endTime: Date,
-  gameData: Object,
+  gameData: [{
+    userID: String,
+    userName: String,
+    score: Number
+  }],
   roomID: String
 });
 

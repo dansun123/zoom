@@ -66,11 +66,32 @@ router.get("/game", auth.ensureLoggedIn, (req, res) => {
 });
 
 router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
-  res.send({});
+  const newRoom = new Room({
+    roomID: req.body.roomID,
+  });
+
+  newRoom.save().then(() => {
+    User.findById(req.user._id).then((user) => {
+      user.roomID = req.body.roomID;
+      user.save().then(() => {
+        res.send({});
+      })
+      
+    })
+    
+  });
+  
 });
 
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
-  res.send({});
+  User.findById(req.user._id).then((user) => {
+    user.roomID = req.body.roomID;
+    user.save().then(() => {
+      socket.getIo().emit("someoneJoinedRoom", {userID: req.user._id, userName: req.user.userName})
+      res.send({});
+    })
+    
+  })
 });
 
 
@@ -80,6 +101,9 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
 
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
+  
+  socket.getIo().emit("updateGameScore", {userID: req.user._id, userName: req.user.userName, score: req.body.score})
+
   res.send({});
 });
 
