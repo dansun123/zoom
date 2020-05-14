@@ -97,8 +97,7 @@ class App extends Component {
   };
 
   createRoom = () => {
-    post('api/createNewRoom').then((res) => {
-      
+    post('api/createNewRoom', {}).then((res) => {
       window.location.href = "http://localhost:5000/"+res.id;
     })
   }
@@ -130,6 +129,7 @@ class App extends Component {
               <Room 
                 path = "/:id" 
                 chat = {this.state.chat}
+                updateState={this.updateState}
               /> />
               <NotFound default />
             </Switch>

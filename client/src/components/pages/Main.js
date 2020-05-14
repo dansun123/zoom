@@ -20,8 +20,14 @@ class Main extends Component {
   render() {
     return (
       <>
-        <button className = "button" onClick = {this.props.createRoom}>Create Room</button>
-        <Chat messages={this.props.chat} roomID={this.state.roomID} />
+        <div className = 'main'>
+          <div className = 'center lefthalf'>
+            <button className = "button" onClick = {this.props.createRoom}>Create Room</button>
+          </div>
+          <div className = 'mainchat righthalf'>
+            <Chat messages={this.props.chat} roomID={this.state.roomID} />
+          </div>
+        </div>
       </>
     );
   }

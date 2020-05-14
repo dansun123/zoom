@@ -12,6 +12,9 @@ const express = require("express");
 // import models so we can interact with the database
 const User = require("./models/user");
 const Game = require("./models/game");
+const Room = require("./models/room");
+const Message = require("./models/message");
+const Song = require("./models/song");
 
 // import authentication library
 const auth = require("./auth");
@@ -64,25 +67,35 @@ router.get("/game", (req, res) => {
   });
 });
 
-router.post("/createNewRoom", (req, res) => {
+router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 
-  let min = 10000000
+  let min = 100000
   let max = min*10-1
   let roomID = Math.floor(Math.random() * (max-min) + min)
-  // what if its already taken :o 
-  const newRoom = new Room({
-    roomID: roomID
-  });
-  newRoom.save().then(() => {
-    User.findById(req.user._id).then((user) => {
-      user.roomID = roomID;
-      user.save().then(() => {
-        res.send({id: roomID})
+  // what if its already taken :o
+
+  Room.findOne({roomID: roomID}).then((room) => {
+    if(room) {
+      User.findById(req.user._id).then((user) => {
+        user.roomID = roomID;
+        user.save().then(() => {
+          res.send({id: roomID})
+        })
       })
-      
-    })
-  
-});
+    } else {
+      const newRoom = new Room({
+        roomID: roomID,
+      })
+      newRoom.save().then(() => {
+        User.findById(req.user._id).then((user) => {
+          user.roomID = roomID;
+          user.save().then(() => {
+            res.send({id: roomID})
+          })
+        })
+      });
+    }
+  })
 });
 
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {

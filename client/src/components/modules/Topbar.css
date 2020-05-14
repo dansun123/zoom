@@ -16,3 +16,9 @@
     color: white;
     font-size: 30px;
 }
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

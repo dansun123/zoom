@@ -17,7 +17,6 @@ class Room extends Component {
         }
     }
     componentDidMount() {
-        let roomID = window.location.href.substring( window.location.href.length - 6);
     }
 
     render() {
