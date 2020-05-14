@@ -66,11 +66,14 @@ router.get("/game", (req, res) => {
 
 router.post("/createNewRoom", (req, res) => {
 
-  let min = 100000
+  let min = 10000000
   let max = min*10-1
   let roomID = Math.floor(Math.random() * (max-min) + min)
-  
-
+  // what if its already taken :o 
+  const newRoom = new Room({
+    roomID: roomID
+  });
+  newRoom.save().then(() => {
     User.findById(req.user._id).then((user) => {
       user.roomID = roomID;
       user.save().then(() => {
@@ -80,12 +83,13 @@ router.post("/createNewRoom", (req, res) => {
     })
   
 });
+});
 
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
   User.findById(req.user._id).then((user) => {
     user.roomID = req.body.roomID;
     user.save().then(() => {
-      socket.getIo().emit("someoneJoinedRoom", {userID: req.user._id, userName: req.user.userName})
+      socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
       res.send({});
     })
     
@@ -99,14 +103,35 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
 
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
-  
-  socket.getIo().emit("updateGameScore", {userID: req.user._id, userName: req.user.userName, score: req.body.score})
+  // score calculation
+  let scoreIncrease = 1
+  let newScore = req.body.score + scoreIncrease
+  socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore})
+  Game.findById(req.body.gameID).then((game) => {
+    let arr = game.gameData
+    arr = arr.filter((obj) => {return !obj.userId.equals(req.user._id)})
+    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore})
+    game.gameData = arr 
+    game.markModified("gameData")
+    game.save().then(() => {
+      res.send({});
+    })
+  })
 
-  res.send({});
 });
 
 
 router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
+  let systemMessage = false
+  if(req.body.systemMessage) systemMessage = true
+  let message = new Message({
+    sender: {userId: req.user._id, userName: req.user.userName},
+    roomID: req.user.roomID, 
+    message: req.body.message,
+    systemMessage: systemMessage
+  })
+  socket.getIo().emit("newMessage", message)
+
   res.send({});
 });
 

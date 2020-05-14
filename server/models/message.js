@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 
 //define a message schema for the database
 const MessageSchema = new mongoose.Schema({
-  sender: {userID: String, userName: String},
+  sender: {userId: String, userName: String},
   roomID: String, 
   timestamp: { type: Date, default: Date.now },
   message: String,
+  systemMessage: {type: Boolean, default: false}
 });
 
 // compile model from schema
