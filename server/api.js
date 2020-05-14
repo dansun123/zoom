@@ -90,14 +90,11 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
   Room.findOne({roomID : req.body.roomID}).then((room) => {
-    console.log(room)
-    console.log(req.body.roomID)
     if(room) {
       User.findById(req.user._id).then((user) => {
         user.roomID = req.body.roomID;
         user.save().then(() => {
           socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
-    
           userList = []
           User.find({roomID: user.roomID}).then((users) => {
             users.forEach((user2) => {
@@ -112,15 +109,9 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
                     res.send({userList: userList, status: "waiting"});
                   }
                 })
-                
-                
-                
-                
               }
             })
           })
-    
-          
         })
       })
     } else {
@@ -180,18 +171,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
     
             }
           })
-          
-          
-          
         })
-
-
-
-
-
-
-
-
       }
     })
   })

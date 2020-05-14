@@ -50,7 +50,8 @@ class App extends Component {
       userId: undefined,
       name2: undefined,
       name: undefined,
-      chat: []
+      chat: [],
+      isLoading: true,
     };
 
     // if (cookies.get('name')) {
@@ -63,7 +64,7 @@ class App extends Component {
     get("/api/whoami").then((user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
-        this.setState({ userId: user._id, name:user.name });
+        this.setState({ userId: user._id, name:user.name, isLoading: false});
       }
     });
 
@@ -152,6 +153,13 @@ class App extends Component {
         </div>
       </>
     )
+    
+    if(this.state.isLoading) {
+      return <>
+      <h1>Loading...</h1>
+      </>
+    }
+
     return (
       <>
         {/* <button onClick = {()=>{console.log(this.state)}}>log app state</button> */}

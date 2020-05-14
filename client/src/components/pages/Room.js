@@ -43,8 +43,9 @@ class Room extends Component {
         super(props);
         this.state = {
             roomID: String(this.props.computedMatch.params.id),
-            users: [],
+            users: undefined,
             status: "waitingToFinish",
+            isLoading: true,
             songlink: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a"
         }
     }
@@ -52,6 +53,7 @@ class Room extends Component {
         post("/api/joinRoom", {roomID: this.state.roomID}).then((data) => {
             console.log(this.state.roomID)
             this.setState({users: data.userList})
+            this.setState({isLoading: false})
             if((data.status === "inProgress") || (data.status === "timer")) {
                 this.setState({status: "waitingToFinish"})
             }
@@ -90,10 +92,15 @@ class Room extends Component {
             this.setState({status: "finished"})
         })
 
-
     }
 
     render() {
+        if(this.state.isLoading) {
+            return <>
+            <h1>Loading...</h1>
+            </>
+        }
+
         if(!this.state.users) {
             return <>
             <button onClick = {()=>{console.log(this.state)}}>log room state</button>
