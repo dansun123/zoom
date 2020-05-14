@@ -134,10 +134,11 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
       if(counter === users.length) {
 
         // create game
-
+        let endTime = new Date((new Date()).getTime() + 33*1000) 
+        let startTime = new Date((new Date()).getTime() + 3*1000) 
         const game = new Game({
           songID: "1511562938",
-          endTime: new Date((new Date()).getTime() + 33*1000),
+          endTime: endTime,
           gameData: gameData,
           roomID: req.user.roomID,
           status: "timer" // inProgress, timer, finished. 
@@ -147,8 +148,9 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
           
           request('https://itunes.apple.com/search?term=Super%20Bass&entity=song&limit=1', (error, response, body) => {
             if (!error && response.statusCode == 200) {
-              let songURL = body["results"][0]["previewUrl"]
-              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id, songURL: songURL})
+             
+              let songURL = JSON.parse(body).results[0].previewUrl
+              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id, songURL: songURL, endTime: endTime, startTime: startTime})
 
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {

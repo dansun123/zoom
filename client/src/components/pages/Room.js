@@ -46,7 +46,10 @@ class Room extends Component {
             users: undefined,
             status: "waitingToFinish",
             isLoading: true,
-            songlink: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a"
+            endTime: new Date(),
+            startTime: new Date(),
+            songURL: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a",
+            timeToStart: 3
         }
     }
     componentDidMount() {
@@ -64,7 +67,7 @@ class Room extends Component {
         }) 
         socket.on("someoneJoinedRoom", (user) => {
             let newUsers  = this.state.users;
-            if(!containsObject(user, newUsers) && user.userId !== this.props.userId) {
+            if(newUsers && !containsObject(user, newUsers) && user.userId !== this.props.userId) {
                 newUsers.push(user)
                 this.setState({
                     users: newUsers
@@ -77,7 +80,10 @@ class Room extends Component {
         })
 
         socket.on("startTimer", (data) => {
-            this.setState({status: "timer"})
+            if(this.state.roomID !== data.roomID) return;
+
+            this.setState({status: "timer", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime})
+            setInterval(() => {this.setState({timeToStart: Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000)+1.0)})}, 1000)
 
         })
 
@@ -93,6 +99,8 @@ class Room extends Component {
         })
 
     }
+
+    
 
     render() {
         if(this.state.isLoading) {
@@ -126,11 +134,15 @@ class Room extends Component {
             </>
         }
         else if(this.state.status === "timer") {
-
+            <h1>Game starting in {this.state.timeToStart} seconds</h1>
 
         }
         else if(this.state.status === "inProgress") {
-           
+            <Music url = {this.state.songURL}></Music>
+
+        }
+        else if(this.state.status === "finished") {
+            <h1>Results</h1>
 
         }
         else {
@@ -145,7 +157,7 @@ class Room extends Component {
                 {/*<img src = {silent}></img>*/}
                 {body}
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
-                <Music url = {this.state.songlink}></Music>
+                
             </>
         );
         

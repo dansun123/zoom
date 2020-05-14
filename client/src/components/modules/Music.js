@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
+import Button from "@material-ui/core/Button";
 
 class Music extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            play: false,
+            play: true,
             audio: new Audio(this.props.url)
         }
     }
@@ -25,9 +26,8 @@ class Music extends React.Component {
   
     render() {
       return (
-        <div>
-          <button onClick={this.togglePlay}>{this.state.play ? 'Pause' : 'Play'}</button>
-        </div>
+        <Button onClick={this.togglePlay}>{this.state.play ? 'Pause' : 'Play'}</Button>
+        
       );
     }
   }
