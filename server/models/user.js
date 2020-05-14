@@ -4,7 +4,6 @@ const UserSchema = new mongoose.Schema({
   name: String,
   googleid: String,
   userName: String,
-  inGame: Boolean,
   roomID: String,
 });
 
