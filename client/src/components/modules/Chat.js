@@ -46,8 +46,7 @@ class Chat extends React.Component {
       return i;
     }
     //console.log(this.props.messages)
-    let height="300px"
-    if(this.props.roomID !== "Lobby") height="580px"
+    let height="260px"
     let crop = (str) => {
       if(str.length > 140) {
         str = str.substring(0, 140)
@@ -56,7 +55,7 @@ class Chat extends React.Component {
       return str
     }
     return (
-      <Box height={height}>
+      <Box >
       <Box height={height}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "scroll", color: "black", display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
           
             <List>

@@ -8,18 +8,18 @@ import ListItemText from '@material-ui/core/ListItemText';
 import LinearProgress from '@material-ui/core/LinearProgress'
 export default function ScorePage(props) {
   const [maxValue, setMaxValue] = useState(15)
-  let scoreListElements = Object.keys(props.scores).sort((a, b) => {return props.scores[b].score - props.scores[a].score}).map((userID, place) => {
+  let scoreListElements = props.gameData.sort((a, b) => {return a.score - b.score}).map((user, place) => {
     let color = ""
     let fontWeight = 'normal'
     let barColor = "primary"
-    if(userID === props.userID) {
+    if(user.userId === props.userId) {
       color = "#6c57f5"
       fontWeight = 'bold'
       barColor = "secondary"
     }
  
    
-    if(props.scores[userID].score > maxValue) {
+    if(user.score > maxValue) {
       setMaxValue(maxValue * 2)
     }
     if(Object.keys(props).includes("cutOff")) {
@@ -27,13 +27,12 @@ export default function ScorePage(props) {
     }
     return <ListItem button>
       
-    <ListItemText primary={(props.scores[userID].name || "") + ": " + (props.scores[userID].score || "0") + " "} />
-    <LinearProgress color={barColor} style={{ zIndex: 2, width: "80%", marginLeft: "auto"}} variant="determinate" value={Math.round(Math.max(0, Math.min(100, props.scores[userID].score*100.0/(maxValue))))} />
+    <ListItemText primary={(user.userName || "") + ": " + (user.score || "0") + " "} />
+    <LinearProgress color={barColor} style={{ zIndex: 2, width: "80%", marginLeft: "auto"}} variant="determinate" value={Math.round(Math.max(0, Math.min(100, user.score*100.0/(maxValue))))} />
   </ListItem>
   })
 
   let height = "370px";
-  if(!props.inProgress) height = "465px"
   return (
     <Box  style={{overflow: "scroll", height: height}} >
         <List>

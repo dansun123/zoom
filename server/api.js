@@ -103,7 +103,19 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
             users.forEach((user2) => {
               userList.push({userId: user2._id, userName: user2.userName})
               if(userList.length === users.length) {
-                res.send(userList);
+                
+                Game.find({roomID: req.body.roomID}).then((game) => {
+                  if(game) {
+                    res.send({userList: userList, status: game.status});
+                  }
+                  else {
+                    res.send({userList: userList, status: "waiting"});
+                  }
+                })
+                
+                
+                
+                
               }
             })
           })
@@ -138,7 +150,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
               status: "timer" // inProgress, timer, finished. 
             });
             game.save().then(() => {
-              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id})
+              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id, songID: game.songID})
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {
                   newGame.status = "inProgress"

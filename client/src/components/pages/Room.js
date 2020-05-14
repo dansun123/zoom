@@ -11,7 +11,7 @@ import Select from "@material-ui/core/Select";
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from "@material-ui/core/Dialog";
 import List from "@material-ui/core/List";
-import CloseIcon from '@material-ui/icons/Close';
+
 import Box from "@material-ui/core/Box";
 import Slide from '@material-ui/core/Slide';
 import ListItem from "@material-ui/core/ListItem";
@@ -25,6 +25,7 @@ import "./Main.css";
 import { withRouter } from "react-router-dom";
 import { get, post } from "../../utilities";
 import { socket } from "../../client-socket.js";
+import ScorePage from "../modules/ScorePage";
 
 function containsObject(obj, list) {
     var i;
@@ -41,13 +42,20 @@ class Room extends Component {
         super(props);
         this.state = {
             roomID: String(this.props.computedMatch.params.id),
-            users: []
+            users: [],
+            status: "waitingToFinish"
         }
     }
     componentDidMount() {
-        post("/api/joinRoom", {roomID: this.state.roomID}).then((userList) => {
+        post("/api/joinRoom", {roomID: this.state.roomID}).then((data) => {
             console.log(this.state.roomID)
-            this.setState({users: userList})
+            this.setState({users: data.userList})
+            if((data.status === "inProgress") || (data.status === "timer")) {
+                this.setState({status: "waitingToFinish"})
+            }
+            else {
+                this.setState({status: "waitingToStart"})
+            }
             console.log("Bi")
         }) 
         socket.on("someoneJoinedRoom", (user) => {
@@ -59,6 +67,28 @@ class Room extends Component {
                 })
             }
         })
+
+        socket.on("updateGameScore", (update) => {
+            
+        })
+
+        socket.on("startTimer", (data) => {
+            this.setState({status: "timer"})
+
+        })
+
+        socket.on("inProgress", (data) => {
+            if(this.state.status === "timer") {
+                this.setState({status: "inProgress"})
+            }
+
+        })
+
+        socket.on("finished", (data) => {
+            this.setState({status: "finished"})
+        })
+
+
     }
 
     render() {
@@ -69,31 +99,44 @@ class Room extends Component {
             </>
         }
 
-        let connectedUsers = this.state.users.map((user) => {
-            return <ListItem><ListItemText primary={user.userName}/></ListItem>
+        let blankGameData = this.state.users.map((user) => {
+            return {userId: user.userId, userName: user.userName, score: 0}
         })
+        
+        let body = <></>
+        if(this.state.status === "waitingToFinish") {
+            body = <h1>Waiting for Game to Finish</h1>
+           
+        }
+        else if(this.state.status === "waitingToStart") {
+            body = 
+            <>
+            <h1>Waiting to Start</h1> 
+            <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
+            </>
+        }
+        else if(this.state.status === "timer") {
+
+
+        }
+        else if(this.state.status === "inProgress") {
+           
+
+        }
+        else {
+            // should never happen
+            body = <h1>Theres  a bug</h1>
+        }
+
         return (
             <>
                 <button onClick = {()=>{console.log(this.state)}}>log room state</button>
                 <h3>RoomID: {this.state.roomID}</h3>
                 <h3>Invite Link: {window.location.href}</h3>
-                <img src = {silent}></img>
+                {/*<img src = {silent}></img>*/}
+                {body}
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
-                <br></br>
-                <br></br>
-                <br></br><br></br>
-                <Box 
-                    height={"360px"} 
-                    style={{overflow: "scroll" }} 
-                    position ={"absolute"} 
-                    top={"70px"}
-                    right={"30px"}
-                >
-                    <ListItem><ListItemText primary={"Players"}/></ListItem>
-                    <List>
-                    {connectedUsers}
-                    </List>
-                </Box>
+                
             </>
         );
         
