@@ -20,6 +20,7 @@ class Main extends Component {
     return (
       <>
         <div>Main</div>
+        <button onClick = {this.props.createRoom}>Create Room</button>
         <img src = {sound}></img>
 
       </>

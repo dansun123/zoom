@@ -94,8 +94,10 @@ class App extends Component {
     post("/api/logout");
   };
 
-  createGame = () => {
-
+  createRoom = () => {
+    post('api/createNewRoom').then((res) => {
+      window.location.href = "http://localhost:5000/"+res.id;
+    })
   }
 
   render() {
@@ -114,7 +116,6 @@ class App extends Component {
                 <input type="submit" value="Submit"/>
             </form>
         </div>
-        <button onClick = {this.createGame}>Create Game</button>
         <Router>
           <div>
             <Switch>
@@ -123,6 +124,7 @@ class App extends Component {
                 handleLogin={this.handleLogin}
                 handleLogout={this.handleLogout}
                 userId={this.state.userId}
+                createRoom = {this.createRoom}
               />
               <Route path="/:id" children={<Child />} />
               <NotFound default />

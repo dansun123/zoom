@@ -44,10 +44,9 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 
-
-
 router.post("/newUser", (req,res) => {
   let newName = req.body.newName;
+  User.find({name: newName})
   let user = new User({
     name: newName,
     roomID: undefined,
@@ -66,20 +65,21 @@ router.get("/game", auth.ensureLoggedIn, (req, res) => {
 });
 
 router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
-  const newRoom = new Room({
-    roomID: req.body.roomID,
-  });
 
-  newRoom.save().then(() => {
+  let min = 1000000
+  let max = min*10-1
+  let roomID = Math.floor(Math.random() * (max-min) + min)
+  
+
     User.findById(req.user._id).then((user) => {
-      user.roomID = req.body.roomID;
+      user.roomID = roomID;
       user.save().then(() => {
-        res.send({});
+        res.send({id: roomID})
       })
       
     })
     
-  });
+
   
 });
 
