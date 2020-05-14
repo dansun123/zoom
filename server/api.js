@@ -58,13 +58,13 @@ router.post("/newUser", (req,res) => {
 
 
 
-router.get("/game", auth.ensureLoggedIn, (req, res) => {
+router.get("/game", (req, res) => {
   Game.findOne({roomID: req.query.roomID}).then((game) => {
     res.send(game)
   });
 });
 
-router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
+router.post("/createNewRoom", (req, res) => {
 
   let min = 1000000
   let max = min*10-1
