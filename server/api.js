@@ -111,19 +111,76 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
 
 
 router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
+  let gameData = []
+  User.find({}).then((users) => {
+    users.forEach((user) => {
+      if(user.roomID.equals(req.user.roomID)) {
+        user.inGame = true
+        gameData.push({userID: user._id, userName: user.userName, score: 0, lyrics: []})
+        user.save().then(() => {
+          if(gameData.length === users.length) {
+
+            // create game
+
+            const game = new Game({
+              songID: "1",
+              endTime: new Date(d.getTime() + 33*1000),
+              gameData: gameData,
+              roomID: req.user.roomID,
+              status: "timer" // inProgress, timer, finished. 
+            });
+            game.save().then(() => {
+              socket.getIo().emit("startTimer", {roomID: req.user.roomID, gameID: game._id})
+              setTimeout(() => {
+                Game.findById(game._id).then((newGame) => {
+                  newGame.status = "inProgress"
+                  newGame.save().then(()=> {
+                    socket.getIo().emit("inProgress", {roomID: req.user.roomID, gameID: game._id})
+                  })
+                })
+               
+                
+              }, 3000)
+              setTimeout(() => {
+                Game.findById(game._id).then((newGame) => {
+                  newGame.status = "finished"
+                  newGame.save().then(()=> {
+                    socket.getIo().emit("finished", {roomID: req.user.roomID, gameID: game._id, gameData: game.gameData})
+                  })
+                })
+              }, 33000)
+
+              
+            })
+
+
+
+
+
+
+
+
+          }
+        })
+      }
+    })
+  })
+  
+  
+
   res.send({});
 });
 
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
   // score calculation
-  let scoreIncrease = 1
-  let newScore = req.body.score + scoreIncrease
+ 
+  let newScore = req.body.lyrics.length  // better score calculationn D:
   socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore})
   Game.findById(req.body.gameID).then((game) => {
     let arr = game.gameData
     arr = arr.filter((obj) => {return !obj.userId.equals(req.user._id)})
-    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore})
+    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
     game.gameData = arr 
     game.markModified("gameData")
     game.save().then(() => {
@@ -148,7 +205,14 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
   res.send({});
 });
 
-
+router.post("/setRoomID", auth.ensureLoggedIn, (req, res) => {
+  User.findById(req.user._id).then((user) => {
+    user.roomID = req.body.roomID
+    user.save().then(() => {
+      res.send({})
+    })
+  })
+})
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {

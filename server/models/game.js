@@ -8,7 +8,8 @@ const GameSchema = new mongoose.Schema({
     userName: String,
     score: Number
   }],
-  roomID: String
+  roomID: String,
+  status: String // inProgress, timer, finished. 
 });
 
 // compile model from schema
