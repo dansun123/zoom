@@ -85,7 +85,7 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
   User.findById(req.user._id).then((user) => {
     user.roomID = req.body.roomID;
     user.save().then(() => {
-      socket.getIo().emit("someoneJoinedRoom", {userID: req.user._id, userName: req.user.userName})
+      socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
       res.send({});
     })
     
@@ -100,7 +100,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
   
-  socket.getIo().emit("updateGameScore", {userID: req.user._id, userName: req.user.userName, score: req.body.score})
+  socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: req.body.score})
 
   res.send({});
 });

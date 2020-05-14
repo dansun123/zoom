@@ -29,7 +29,7 @@ function getOrCreateUser(user) {
       googleid: user.sub,
       userName: "Guest",
       inGame: false,
-      typingSpeed: 0,
+      roomID: undefined,
     });
 
     return newUser.save();
