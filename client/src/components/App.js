@@ -102,7 +102,7 @@ class App extends Component {
   };
 
   render() {
-    let privateContent = this.state.isLoading ? <h1>Loading...</h1> : 
+    let privateContent =  
       (
       <>
         <Topbar
@@ -111,6 +111,7 @@ class App extends Component {
           handleLogin={this.handleLogin}
           handleLogout={this.handleLogout}
         />
+        {this.state.isLoading ? <h1>Loading...</h1> :
         <Router>
           <div>
             <Switch>
@@ -132,6 +133,7 @@ class App extends Component {
             </Switch>
           </div>  
         </Router>
+  }
       </>
     );
 
