@@ -7,6 +7,7 @@
 }
 
 .title {
+    margin-left: 10px;
     color: white;
     font-size: 30px;
     font-family: "Lucida Console", Courier, monospace;
@@ -21,4 +22,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.login {
+    margin-right: 10px;
 }

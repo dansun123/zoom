@@ -13,6 +13,8 @@ import Main from "./pages/Main.js";
 import Topbar from "./modules/Topbar.js";
 import Room from "./pages/Room.js";
 
+import Record from "../../dist/favicon.png"
+
 import "../utilities.css";
 
 import { socket } from "../client-socket.js";
@@ -139,15 +141,20 @@ class App extends Component {
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
         />
-        <div>
-          Memorize the lyrics to your favorite songs on the Billboard Top 500 hits
-          and improve your typing speed while your'e at it! Log in to play.
+        <div className = "mainpublic">
+          <div className = "record">
+            <img src = {Record}/>
+          </div>
+          <div className = "public">
+            Memorize the lyrics to your favorite songs on the Billboard Top 500 hits
+            and improve your typing speed while you're at it! Log in to play.
+          </div>
         </div>
       </>
     )
     return (
       <>
-        <button onClick = {()=>{console.log(this.state)}}>log app state</button>
+        {/* <button onClick = {()=>{console.log(this.state)}}>log app state</button> */}
         {this.state.userId ? privateContent: publicContent}
       </>
     );

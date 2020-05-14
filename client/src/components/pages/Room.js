@@ -20,6 +20,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 
 
 import NotFound from "./NotFound"
+import Music from "../modules/Music"
 import "../../utilities.css";
 import "./Main.css";
 import { withRouter } from "react-router-dom";
@@ -43,7 +44,8 @@ class Room extends Component {
         this.state = {
             roomID: String(this.props.computedMatch.params.id),
             users: [],
-            status: "waitingToFinish"
+            status: "waitingToFinish",
+            songlink: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a"
         }
     }
     componentDidMount() {
@@ -132,12 +134,11 @@ class Room extends Component {
         return (
             <>
                 <button onClick = {()=>{console.log(this.state)}}>log room state</button>
-                <h3>RoomID: {this.state.roomID}</h3>
                 <h3>Invite Link: {window.location.href}</h3>
                 {/*<img src = {silent}></img>*/}
                 {body}
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
-                
+                <Music url = {this.state.songlink}></Music>
             </>
         );
         
