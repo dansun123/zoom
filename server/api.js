@@ -44,9 +44,11 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 
-router.post("/createRoom", (req,res) => {
-  let roomID = Math.floor(Math.random() * (999999 - 100000) + 100000)
-  
+router.post("/createNewRoom", (req,res) => {
+  let min = 1000000
+  let max = min*10-1
+  let roomID = Math.floor(Math.random() * (max-min) + min)
+  res.send({id: roomID})
 });
 
 router.post("/newUser", (req,res) => {
@@ -67,10 +69,6 @@ router.get("/game", auth.ensureLoggedIn, (req, res) => {
   Game.findOne({roomID: req.query.roomID}).then((game) => {
     res.send(game)
   });
-});
-
-router.post("/createNewRoom", auth.ensureLoggedIn, (req, res) => {
-  res.send({});
 });
 
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {

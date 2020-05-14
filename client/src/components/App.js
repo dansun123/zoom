@@ -85,7 +85,6 @@ class App extends Component {
     post('api/newUser', query).then((res) => {
         this.setState({name: res.newName});
         cookies.set('name', res.newName, {path:'/'});
-        cookies.set('id', res.id, {path:'/'})
     })
     event.preventDefault();
   }
@@ -96,7 +95,7 @@ class App extends Component {
   };
 
   createRoom = () => {
-    post('api/createRoom').then((res) => {
+    post('api/createNewRoom').then((res) => {
       window.location.href = "http://localhost:5000/"+res.id;
     })
   }
@@ -117,7 +116,6 @@ class App extends Component {
                 <input type="submit" value="Submit"/>
             </form>
         </div>
-        <button onClick = {this.createRoom}>Create Room</button>
         <Router>
           <div>
             <Switch>
@@ -126,6 +124,7 @@ class App extends Component {
                 handleLogin={this.handleLogin}
                 handleLogout={this.handleLogout}
                 userId={this.state.userId}
+                createRoom = {this.createRoom}
               />
               <Route path="/:id" children={<Child />} />
               <NotFound default />
