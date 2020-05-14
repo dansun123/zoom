@@ -64,8 +64,9 @@ class App extends Component {
     get("/api/whoami").then((user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
-        this.setState({ userId: user._id, name:user.name, isLoading: false});
+        this.setState({ userId: user._id, name:user.name});
       }
+      this.setState({isLoading: false})
     });
 
     socket.on('newMessage', (message) => {
