@@ -63,47 +63,57 @@ router.post("/newUser", (req,res) => {
 
 router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 
-  let min = 100000
+  let min = 10000
   let max = min*10-1
-  let roomID = Math.floor(Math.random() * (max-min) + min)
+  let roomID = String(Math.floor(Math.random() * (max-min) + min))
   // what if its already taken :o
 
-  // Room.findOne({roomID: roomID}).then((room) => {
-  //   if(room) {
-  //     User.findById(req.user._id).then((user) => {
-  //       user.roomID = roomID;
-  //       user.save().then(() => {
+  Room.findOne({roomID: roomID}, (room) => {
+    if(room) {
+      User.findById(req.user._id).then((user) => {
+        user.roomID = roomID;
+        user.save().then(() => {
           res.send({id: roomID})
-  //       })
-  //     })
-  //   } else {
-  //     const newRoom = new Room({
-  //       roomID: roomID,
-  //     })
-  //     newRoom.save();
-  //   }
-  // })
+        })
+      })
+    } else {
+      const newRoom = new Room({
+        roomID: roomID,
+      })
+      newRoom.save().then(() => {
+        res.send({id: roomID})
+      });
+    }
+  })
 });
 
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
 router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
-  User.findById(req.user._id).then((user) => {
-    user.roomID = req.body.roomID;
-    user.save().then(() => {
-      socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
-
-      userList = []
-      User.find({roomID: user.roomID}).then((users) => {
-        users.forEach((user2) => {
-          userList.push({userId: user2._id, userName: user2.userName})
-          if(userList.length === users.length) {
-            res.send(userList);
-          }
+  Room.findOne({roomID : req.body.roomID}).then((room) => {
+    console.log(room)
+    console.log(req.body.roomID)
+    if(room) {
+      User.findById(req.user._id).then((user) => {
+        user.roomID = req.body.roomID;
+        user.save().then(() => {
+          socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
+    
+          userList = []
+          User.find({roomID: user.roomID}).then((users) => {
+            users.forEach((user2) => {
+              userList.push({userId: user2._id, userName: user2.userName})
+              if(userList.length === users.length) {
+                res.send(userList);
+              }
+            })
+          })
+    
+          
         })
       })
-
-      
-    })
+    } else {
+      res.send(false)
+    }
   })
 });
 
@@ -194,7 +204,7 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
   if(req.body.systemMessage) systemMessage = true
   let message = new Message({
     sender: {userId: req.user._id, userName: req.user.userName},
-    roomID: req.user.roomID, 
+    roomID: req.body.roomID, 
     message: req.body.message,
     systemMessage: systemMessage
   })

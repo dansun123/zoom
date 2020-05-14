@@ -90,7 +90,7 @@ class App extends Component {
 
   createRoom = () => {
     post('api/createNewRoom', {}).then((res) => {
-      window.location.href = "http://localhost:5000/"+res.id;
+      window.location.href = window.location.href+res.id;
     })
   }
 
