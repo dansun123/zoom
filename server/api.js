@@ -111,15 +111,17 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
 router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
   let gameData = []
   User.find({}).then((users) => {
+    let counter = 0
     users.forEach((user) => {
-      if(user.roomID.equals(req.user.roomID)) {
+      counter += 1
+      if(user.roomID === req.user.roomID) {
         gameData.push({userID: user._id, userName: user.userName, score: 0, lyrics: []})
-        if(gameData.length === users.length) {
+        if(counter === users.length) {
 
             // create game
 
             const game = new Game({
-              songID: "1",
+              songID: "1511562938",
               endTime: new Date(d.getTime() + 33*1000),
               gameData: gameData,
               roomID: req.user.roomID,
@@ -175,7 +177,7 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
   socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore})
   Game.findById(req.body.gameID).then((game) => {
     let arr = game.gameData
-    arr = arr.filter((obj) => {return !obj.userId.equals(req.user._id)})
+    arr = arr.filter((obj) => {return obj.userId !== req.user._id})
     arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
     game.gameData = arr 
     game.markModified("gameData")
