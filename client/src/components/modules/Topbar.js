@@ -23,15 +23,24 @@ class Topbar extends Component {
         <div className = "topbar">
           <div className = "djzoomer">DJ-Zoomer</div>
           <div className = "welcome">Hey {this.props.name}</div>
-          <div className = "login-logout">
+          <div className = "login">
             {this.props.userId ? (
-              "yes"
+              <GoogleLogout
+                clientId={GOOGLE_CLIENT_ID}
+                buttonText="Logout"
+                onLogoutSuccess={this.props.handleLogout}
+                onFailure={(err) => console.log(err)}
+              />
             ) : (
-              "no"
+              <GoogleLogin
+                clientId={GOOGLE_CLIENT_ID}
+                buttonText="Login"
+                onSuccess={this.props.handleLogin}
+                onFailure={(err) => console.log(err)}
+              />
             )}
           </div>
         </div>
-
       </>
     );
   }
