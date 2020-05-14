@@ -21,8 +21,8 @@ class Topbar extends Component {
     return (
       <>
         <div className = "topbar">
-          <div className = "djzoomer">DJ-Zoomer</div>
-          <div className = "welcome">Welcome {this.props.name}</div>
+          <div className = "title">DJ-Zoomer</div>
+          {this.props.userId ? <div className = "welcome">Welcome {this.props.name}</div>: <></>}
           <div className = "login">
             {this.props.userId ? (
               <GoogleLogout
