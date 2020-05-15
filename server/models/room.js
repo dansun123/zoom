@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
 const RoomSchema = new mongoose.Schema({
-  roomID: String
+  roomID: String,
+  queue: Array,
 });
 
 // compile model from schema

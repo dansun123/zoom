@@ -19,7 +19,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import MenuItem from "@material-ui/core/MenuItem";
 
-
+import SongQueue from "../modules/SongQ"
 import NotFound from "./NotFound"
 import Music from "../modules/Music"
 import "../../utilities.css";
@@ -51,13 +51,13 @@ class Room extends Component {
             startTime: new Date(),
             songURL: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a",
             timeToStart: 3,
-            gameData: []
+            gameData: [],
+            queue: []
         }
     }
     componentDidMount() {
         post("/api/joinRoom", {roomID: this.state.roomID}).then((data) => {
-            console.log(this.state.roomID)
-            this.setState({users: data.userList})
+            this.setState({users: data.userList, queue: data.queue})
             this.setState({isLoading: false})
             if((data.status === "inProgress") || (data.status === "timer")) {
                 this.setState({status: "waitingToFinish"})
@@ -65,7 +65,6 @@ class Room extends Component {
             else {
                 this.setState({status: "waitingToStart"})
             }
-            console.log("Bi")
         }) 
         socket.on("someoneJoinedRoom", (user) => {
             let newUsers  = this.state.users;
@@ -74,6 +73,12 @@ class Room extends Component {
                 this.setState({
                     users: newUsers
                 })
+            }
+        })
+
+        socket.on("newQ", (q) => {
+            if(q.roomID == this.state.roomID) {
+                this.setState({queue: q.q})
             }
         })
 
@@ -107,7 +112,6 @@ class Room extends Component {
     render() {
         if(this.state.isLoading) {
             return <>
-            <button onClick = {()=>{console.log(this.state)}}>log room state</button>
             <h1>Loading...</h1>
             </>
         }
@@ -133,7 +137,7 @@ class Room extends Component {
             <>
             <h1>Waiting to Start</h1> 
             <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
-            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID})}}>Start Game</Button>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start Game</Button>
             </>
         }
         else if(this.state.status === "timer") {
@@ -182,7 +186,7 @@ class Room extends Component {
                  {/*<img src = {silent}></img>*/}
                 {body}
                 <Chat messages={this.props.chat} roomID={this.state.roomID} />
-                
+                <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>
             </>
         );
         

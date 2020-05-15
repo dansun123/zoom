@@ -9,6 +9,7 @@
 
 const express = require("express");
 var request = require('request');
+const utf8 = require('utf8');
 // import models so we can interact with the database
 const User = require("./models/user");
 const Game = require("./models/game");
@@ -103,10 +104,10 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
                 
                 Game.find({roomID: req.body.roomID}).then((game) => {
                   if(game) {
-                    res.send({userList: userList, status: game.status});
+                    res.send({userList: userList, status: game.status, queue: room.queue});
                   }
                   else {
-                    res.send({userList: userList, status: "waiting"});
+                    res.send({userList: userList, status: "waiting", queue: room.queue});
                   }
                 })
               }
@@ -119,6 +120,10 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
     }
   })
 });
+
+router.post("/songLink", auth.ensureLoggedIn, (req, res) => {
+
+})
 
 
 router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
@@ -146,7 +151,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
         game.save().then(() => {
           // API Get
           
-          request('https://itunes.apple.com/search?term=Super%20Bass&entity=song&limit=1', (error, response, body) => {
+          request('https://itunes.apple.com/search?term='+utf8.encode(req.body.song)+'&entity=song&limit=1', (error, response, body) => {
             if (!error && response.statusCode == 200) {
              
               let songURL = JSON.parse(body).results[0].previewUrl
@@ -215,6 +220,18 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
   socket.getIo().emit("newMessage", message)
 
   res.send({});
+});
+
+router.post("/newSongReq", auth.ensureLoggedIn, (req, res) => {
+  Room.findOne({roomID: req.body.roomID}).then((room) => {
+    let q = room.queue;
+    q.push(req.body.newSong);
+    room.queue = q;
+    room.save().then(() => {
+      socket.getIo().emit("newQ", {q:q, roomID: req.body.roomID})
+      res.send({});
+    });
+  })
 });
 
 
