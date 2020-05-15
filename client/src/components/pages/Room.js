@@ -13,7 +13,6 @@ import Dialog from "@material-ui/core/Dialog";
 import List from "@material-ui/core/List";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 
-
 import Box from "@material-ui/core/Box";
 import Slide from '@material-ui/core/Slide';
 import ListItem from "@material-ui/core/ListItem";
@@ -173,10 +172,12 @@ class Room extends Component {
                 <h3> 
                     Invite Link: {window.location.href}
                     <CopyToClipboard text={window.location.href}
-                        onCopy={() => this.setState({copied: true})}>
-                        <button>Copy to clipboard</button>
+                        onCopy={() => {this.setState({copied:true})}}>
+                        {!this.state.copied ? 
+                            <button className = "button2">Copy to clipboard</button>
+                            : <button className = "button2">Copied to clipboard!</button>
+                        }
                     </CopyToClipboard>
-                    {this.state.copied ? <span style={{color: 'red'}}>Copied.</span> : null}  
                  </h3>
                  {/*<img src = {silent}></img>*/}
                 {body}
