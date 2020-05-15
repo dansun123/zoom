@@ -150,17 +150,19 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
         });
         game.save().then(() => {
           // API Get
-          
-          request('https://itunes.apple.com/search?term='+utf8.encode(req.body.song)+'&entity=song&limit=1', (error, response, body) => {
+          let usersong = "Starships Nicki Minaj"
+          if(req.body.song) usersong = req.body.song
+          request('https://itunes.apple.com/search?term='+utf8.encode(usersong)+'&entity=song&limit=1', (error, response, body) => {
             if (!error && response.statusCode == 200) {
              
               let songURL = JSON.parse(body).results[0].previewUrl
 
               Room.findOne({roomID: req.body.roomID}).then((room) => {
-                room.queue = room.queue.filter((song) => {return song !== req.body.song})
+                room.queue = room.queue.filter((song) => {return song !== usersong})
+                room.save()
               })
 
-              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, song: req.body.song, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
+              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, song: usersong, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
 
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {

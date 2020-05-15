@@ -90,23 +90,32 @@ class Room extends Component {
             if(this.state.roomID !== data.roomID) return;
 
             this.setState({status: "timer", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime, gameData: this.state.gameData})
-            setInterval(() => {
-                //let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
-                this.setState({timeToStart: this.state.timeToStart-1})}, 1000)
+            let counter = 0
+            var interval = setInterval(() => {
+                let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
+                this.setState({timeToStart: timeToStart})
+                counter += 1
+                if(counter === 4) {
+                    clearInterval(interval)
+                }
+            
+            }, 1000)
 
             let newQueue = this.state.queue.filter((song) => {return song !== data.song})
             this.setState({queue: newQueue})
         })
 
         socket.on("inProgress", (data) => {
+            
             if(this.state.status === "timer") {
                 this.setState({status: "inProgress"})
+                
             }
 
         })
 
         socket.on("finished", (data) => {
-            this.setState({status: "finished"})
+            this.setState({status: "finished", timeToStart: 3})
         })
 
     }
