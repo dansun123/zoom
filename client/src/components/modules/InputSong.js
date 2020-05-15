@@ -9,8 +9,6 @@ import { get, post } from "../../utilities";
 
 import Music from "./Music";
 
-let API_KEY = "f5175382b7863a5e3c01a3b0981b2529";
-
 class InputSong extends React.Component {
     constructor(props) {
         super(props);
@@ -42,10 +40,11 @@ class InputSong extends React.Component {
                 answerKey: response.answerKey, 
                 title: response.title, 
                 artist: response.primaryArtist,
-                featuredArtists: response.featuredArtists,
+                // featuredArtists: response.featuredArtists,
                 artUrl: response.artUrl,
                 id: response.id,
                 songUrl: response.url,
+                embedContent: response.embedContent,
             })
             // console.log("track.lyrics.get?apikey="+API_KEY+"&track_id="+response.track_id)
         })
@@ -54,15 +53,35 @@ class InputSong extends React.Component {
     handleSubmit = event => {
         event.preventDefault();
         // this.sendMessage();
-        post("/api/songLink", {answerKey: this.state.answerKey, title: this.state.title, artist: this.state.artist}).then(() => {
-            this.setState({ title: "", artist: "", answerKey: ""})
+        let body = {
+            answerKey: this.state.answerKey, 
+            title: this.state.title, 
+            primaryArtist: this.state.artist,
+            // featuredArtists: this.state.featuredArtists,
+            artUrl: this.state.artUrl,
+            geniusID: this.state.id,
+            songUrl: this.state.songUrl,
+            embedContent: this.state.embedContent
+        }
+        console.log(this.state.embedContent)
+        post("/api/songLink", body).then(() => {
+            this.setState({ 
+                title: "", 
+                artist: "", 
+                answerKey: "",
+                // featuredArtists: undefined,
+                artUrl: undefined,
+                id: undefined,
+                songUrl: undefined,
+                embedContent: undefined,
+            })
         });
     };
 
     render() {
       return (
         <Box>
-                    <button onClick = {()=>{console.log(this.state)}}>log InputSong state</button>
+            <button onClick = {()=>{console.log(this.state)}}>log InputSong state</button>
 
             <TextField
             label="Title"
@@ -71,6 +90,14 @@ class InputSong extends React.Component {
             value={this.state.title}
             fullWidth
             onChange={this.handleChangeTitle}
+            onKeyPress = {(event) => {
+                if(event.charCode === 13) {
+                    if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {
+                        this.setState({lastMessage: new Date()})
+                        this.handleFetch(event)
+                    }
+                }
+              }}
             />
             <div>by</div>
             <TextField
@@ -90,7 +117,7 @@ class InputSong extends React.Component {
                 }
             }}> Fetch
             </button>
-            {this.state.featuredArtists ? <div>Featuring {this.state.featuredArtists}</div>: null}
+            {this.state.embedContent ? <td dangerouslySetInnerHTML={{__html: this.state.embedContent}} />: null}
             {this.state.artUrl ? <img src = {this.state.artUrl} style={{width:"100px", height: "100px"}}/>: null}
             {this.state.songUrl ? <Music url = {this.state.songUrl}/>: null}
             <TextField

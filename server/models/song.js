@@ -4,7 +4,7 @@ const SongSchema = new mongoose.Schema({
   answerKey: String,
   title: String,
   primaryArtist: String,
-  featuredArtists: Array,
+  // featuredArtists: Array,
   artUrl: String,
   geniusID: String,
   songUrl: String,

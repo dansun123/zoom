@@ -188,31 +188,30 @@ router.get("/songLyrics", (req, res) => {
       genius.search(req.query.title).then(function(response1) {
         genius.song(response1.hits[0].result.id).then(function(response) {
           console.log('song', response.song); 
-          let title = response.song.title;
+          let title = String(response.song.title);
           let primaryArtist =  response.song.primary_artist.name;
-          let featuredArtists = response.song.featured_artists;
+          // let featuredArtists = "Daniel";
           let artUrl = response.song.song_art_image_url;
           let id = String(response.song.id);
-          let embedContent = response.embed_content;
+          let embedContent = response.song.embed_content;
           const options = {
             apiKey: process.env.GENIUS_CLIENT_ACCESS_TOKEN, // genius developer access token
-            title: title,
-            artist: primaryArtist,
+            title: utf8.encode(title),
+            artist: utf8.encode(primaryArtist),
             optimizeQuery: true
           }
-          console.log(options)
           getLyrics(options).then(answer => {
             console.log("lyrics")
-            // console.log(answer)
+            console.log(answer)
             res.send({
               title: title,
               primaryArtist: primaryArtist,
-              featuredArtists: featuredArtists,
+              // featuredArtists: featuredArtists,
               artUrl: artUrl,
               id: id,
-              answerKey: answer,
+              answerKey: (answer ? answer.substring(0, Math.min(answer.length, 2000)) : null),
               url: songURL,
-              //embedContent: embedContent
+              embedContent: embedContent
             })
           })
         });
@@ -222,20 +221,22 @@ router.get("/songLyrics", (req, res) => {
 })
 
 
-router.post("/songLink", auth.ensureLoggedIn, (req, res) => {
+router.post("/songLink", (req, res) => {
+  console.log(req.body.embedContent)
   const song = new Song({
     answerKey: req.body.answerKey,
     title: req.body.title,
     primaryArtist: req.body.primaryArtist,
-    featuredArtists: req.body.featuredArtists,
+    // featuredArtists: req.body.featuredArtists,
     artUrl: req.body.artUrl,
     geniusID: req.body.geniusID,
     songUrl: req.body.songUrl,
     embedContent: req.body.embedContent,
   })
   song.save();
-  res.send();
+  res.send({});
 })
+
 
 
 router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
