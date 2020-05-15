@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound.js";
 import Main from "./pages/Main.js";
 import Topbar from "./modules/Topbar.js";
 import Room from "./pages/Room.js";
+import InputSong from "./modules/InputSong.js";
 
 import Record from "../../dist/favicon.png"
 
@@ -140,21 +141,32 @@ class App extends Component {
 
     let publicContent = (
       <>
-        <Topbar
-            userId={this.state.userId}
-            name = {this.state.name}
-            handleLogin={this.handleLogin}
-            handleLogout={this.handleLogout}
-        />
-        <div className = "mainpublic">
-          <div className = "record">
-            <img src = {Record}/>
-          </div>
-          <div className = "public">
-            Memorize the lyrics to your favorite songs on the Billboard Top 500 hits
-            and improve your typing speed while you're at it! Log in to play.
-          </div>
-        </div>
+        <Router>
+          <div>
+            <Switch>
+              <InputSong
+                exact path = "/input"
+              />
+              <div default>
+                <Topbar
+                    userId={this.state.userId}
+                    name = {this.state.name}
+                    handleLogin={this.handleLogin}
+                    handleLogout={this.handleLogout}
+                />
+                <div className = "mainpublic">
+                  <div className = "record">
+                    <img src = {Record}/>
+                  </div>
+                  <div className = "public">
+                    Memorize the lyrics to your favorite songs on the Billboard Top 500 hits
+                    and improve your typing speed while you're at it! Log in to play.
+                  </div>
+                </div>
+              </div>
+            </Switch>
+          </div>  
+        </Router>
       </>
     )
     
