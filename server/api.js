@@ -287,7 +287,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                 let songURL = JSON.parse(body).results[0].previewUrl
   
                 Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  room.queue = room.queue.filter((song2) => {return song2.songID !== song._id})
+                  room.queue = room.queue.filter((song2) => {return song2.songID !== song2._id})
                   room.save()
                 })
   
