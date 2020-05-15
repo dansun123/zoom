@@ -27,8 +27,8 @@ class Music extends React.Component {
   
     render() {
       return (
-        <></>
-        /*<Button onClick={this.togglePlay}>{this.state.play ? 'Pause' : 'Play'}</Button>*/
+        
+        <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>
         
       );
     }
