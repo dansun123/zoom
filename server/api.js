@@ -281,17 +281,16 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             // API Get
             
             
-            request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist)+'&entity=song&limit=1', (error, response, body) => {
-              if (!error && response.statusCode == 200) {
+            
                
-                let songURL = JSON.parse(body).results[0].previewUrl
+                
   
                 Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  room.queue = room.queue.filter((song2) => {return song2.songID !== song2._id})
+                  room.queue = room.queue.filter((song2) => {return song2.songID !== song._id})
                   room.save()
                 })
   
-                socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
+                socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: song.songUrl, endTime: endTime, startTime: startTime, gameData: gameData})
   
                 setTimeout(() => {
                   Game.findById(game._id).then((newGame) => {
@@ -313,8 +312,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                   })
                 }, 33000)
       
-              }
-            })
+             
           })
         })
 
