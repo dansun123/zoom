@@ -90,8 +90,12 @@ class Room extends Component {
             if(this.state.roomID !== data.roomID) return;
 
             this.setState({status: "timer", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime, gameData: this.state.gameData})
-            setInterval(() => {this.setState({timeToStart: Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000)+1.0)})}, 1000)
+            setInterval(() => {
+                //let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
+                this.setState({timeToStart: this.state.timeToStart-1})}, 1000)
 
+            let newQueue = this.state.queue.filter((song) => {return song !== data.song})
+            this.setState({queue: newQueue})
         })
 
         socket.on("inProgress", (data) => {
@@ -135,6 +139,16 @@ class Room extends Component {
         else if(this.state.status === "waitingToStart") {
             body = 
             <>
+            <h3> 
+                    Invite Link: {window.location.href}
+                    <CopyToClipboard text={window.location.href}
+                        onCopy={() => {this.setState({copied:true})}}>
+                        {!this.state.copied ? 
+                            <button className = "button2">Copy to clipboard</button>
+                            : <button className = "button2">Copied to clipboard!</button>
+                        }
+                    </CopyToClipboard>
+                 </h3>
             <h1>Waiting to Start</h1> 
             <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start Game</Button>
@@ -161,7 +175,7 @@ class Room extends Component {
             body = 
             <>
             <h1>Results</h1>
-            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID})}}>Start New Game</Button>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start New Game</Button>
             </>
 
         }
@@ -172,21 +186,20 @@ class Room extends Component {
 
         return (
             <>
-                <button onClick = {()=>{console.log(this.state)}}>log room state</button>
-                <h3> 
-                    Invite Link: {window.location.href}
-                    <CopyToClipboard text={window.location.href}
-                        onCopy={() => {this.setState({copied:true})}}>
-                        {!this.state.copied ? 
-                            <button className = "button2">Copy to clipboard</button>
-                            : <button className = "button2">Copied to clipboard!</button>
-                        }
-                    </CopyToClipboard>
-                 </h3>
+                {/*<button onClick = {()=>{console.log(this.state)}}>log room state</button>*/}
+                
                  {/*<img src = {silent}></img>*/}
-                {body}
-                <Chat messages={this.props.chat} roomID={this.state.roomID} />
-                <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>
+                 <Grid container direction="row">
+                <Box width={"calc(100% - 400px)"} >
+                     {body}
+                </Box>
+                <Box width={"400px"} >
+                    <Chat messages={this.props.chat} roomID={this.state.roomID} />
+                    <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>
+                </Box>
+                </Grid>
+                
+                
             </>
         );
         

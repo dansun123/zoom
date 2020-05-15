@@ -46,7 +46,7 @@ class Chat extends React.Component {
       return i;
     }
     //console.log(this.props.messages)
-    let height="260px"
+    let height="220px"
     let crop = (str) => {
       if(str.length > 140) {
         str = str.substring(0, 140)

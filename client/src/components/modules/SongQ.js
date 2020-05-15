@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import Button from "@material-ui/core/Button";
+import Box from "@material-ui/core/Box";
+import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import TextField from "@material-ui/core/TextField";
@@ -32,28 +34,30 @@ class SongQueue extends React.Component {
             return <ListItem><ListItemText primary={title}/></ListItem>
         })
       return (
-        <>
-            <h3>Song Queue</h3>
-            {songQueue}
-            <TextField
+      <Box>
+         <Box height={"220px"}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "scroll", color: "#678efd", fontWeight: "900",  display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
+            <List>{songQueue}</List>
+            
+        </Box>
+        <TextField
           
-            label="Message"
-            variant="outlined"
-            size="small"
-            value={this.state.messageText}
-            fullWidth
-            onChange={this.handleChange}
-            onKeyPress = {(event) => {
-                if(event.charCode === 13) {
-                    if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {
-                        this.setState({lastMessage: new Date()})
-                        this.handleSubmit(event)
-                    }
+        label="Add Song to Queue"
+        variant="outlined"
+        size="small"
+        value={this.state.messageText}
+        fullWidth
+        onChange={this.handleChange}
+        onKeyPress = {(event) => {
+            if(event.charCode === 13) {
+                if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {
+                    this.setState({lastMessage: new Date()})
+                    this.handleSubmit(event)
                 }
-            }}
+            }
+        }}
 
-            />
-        </>
+        />
+        </Box>
       );
     }
   }

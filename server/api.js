@@ -155,11 +155,17 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             if (!error && response.statusCode == 200) {
              
               let songURL = JSON.parse(body).results[0].previewUrl
-              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
+
+              Room.findOne({roomID: req.body.roomID}).then((room) => {
+                room.queue = room.queue.filter((song) => {return song !== req.body.song})
+              })
+
+              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, song: req.body.song, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
 
               setTimeout(() => {
                 Game.findById(game._id).then((newGame) => {
                   newGame.status = "inProgress"
+       
                   newGame.save().then(()=> {
                     socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
                   })
