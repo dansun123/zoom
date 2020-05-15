@@ -27,7 +27,7 @@ export default function ScorePage(props) {
     }
     return <ListItem button>
     <Box width={"300px"}>
-    <h1 style={{fontWeight: "900", color: "#F92035"}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h1>
+    <h1 style={{fontWeight: "900", color: "#0000FF"}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h1>
     </Box>
     <Box width={"calc(100% - 300px)"}>
     <h1 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h1>

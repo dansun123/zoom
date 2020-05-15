@@ -180,6 +180,18 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
   })
 });
 
+router.get("/songs", auth.ensureLoggedIn, (req, res) => {
+    Song.find({}).then((songs) => {
+      let listOfSongs = []
+      songs.forEach((song) => {
+        listOfSongs.push({title: song.title, primaryArtist: song.primaryArtist, songID: song._id})
+        if(listOfSongs.length === songs.length) {
+          res.send(listOfSongs);
+        }
+      })
+    })
+})
+
 router.get("/songLyrics", (req, res) => {
   console.log(req.query.title)
   request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title)+'&entity=song&limit=1', (error, response, body) => {
@@ -254,52 +266,60 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
         // create game
         let endTime = new Date((new Date()).getTime() + 33*1000) 
         let startTime = new Date((new Date()).getTime() + 3*1000) 
-        const game = new Game({
-          songID: "1511562938",
-          endTime: endTime,
-          gameData: gameData,
-          roomID: req.body.roomID,
-          status: "timer" // inProgress, timer, finished. 
-        });
-        game.save().then(() => {
-          // API Get
-          let usersong = "Starships Nicki Minaj"
-          if(req.body.song) usersong = req.body.song
-          request('https://itunes.apple.com/search?term='+utf8.encode(usersong)+'&entity=song&limit=1', (error, response, body) => {
-            if (!error && response.statusCode == 200) {
-             
-              let songURL = JSON.parse(body).results[0].previewUrl
 
-              Room.findOne({roomID: req.body.roomID}).then((room) => {
-                room.queue = room.queue.filter((song) => {return song !== usersong})
-                room.save()
-              })
-
-              socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, song: usersong, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
-
-              setTimeout(() => {
-                Game.findById(game._id).then((newGame) => {
-                  newGame.status = "inProgress"
-       
-                  newGame.save().then(()=> {
-                    socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
-                  })
-                })
+        let parameter = {}
+        if(req.body.song) parameter = {_id: req.body.song.songID}
+        Song.findOne(parameter).then((song) => {
+          const game = new Game({
+            songID: song._id,
+            answerKey: song.answerKey,
+            endTime: endTime,
+            gameData: gameData,
+            roomID: req.body.roomID,
+            status: "timer" // inProgress, timer, finished. 
+          });
+          game.save().then(() => {
+            // API Get
+            
+            
+            request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist)+'&entity=song&limit=1', (error, response, body) => {
+              if (!error && response.statusCode == 200) {
                
-                
-              }, 3000)
-              setTimeout(() => {
-                Game.findById(game._id).then((newGame) => {
-                  newGame.status = "finished"
-                  newGame.save().then(()=> {
-                    socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: game.gameData})
-                  })
+                let songURL = JSON.parse(body).results[0].previewUrl
+  
+                Room.findOne({roomID: req.body.roomID}).then((room) => {
+                  room.queue = room.queue.filter((song2) => {return song2.songID !== song2._id})
+                  room.save()
                 })
-              }, 33000)
-    
-            }
+  
+                socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
+  
+                setTimeout(() => {
+                  Game.findById(game._id).then((newGame) => {
+                    newGame.status = "inProgress"
+         
+                    newGame.save().then(()=> {
+                      socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
+                    })
+                  })
+                 
+                  
+                }, 3000)
+                setTimeout(() => {
+                  Game.findById(game._id).then((newGame) => {
+                    newGame.status = "finished"
+                    newGame.save().then(()=> {
+                      socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: game.gameData})
+                    })
+                  })
+                }, 33000)
+      
+              }
+            })
           })
         })
+
+        
       }
     })
   })
@@ -309,13 +329,23 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
   res.send({});
 });
 
+var stringSimilarity = require('string-similarity');
+
+let similarity = (lyrics, answerKey) => {
+  //console.log(lyrics)
+  //console.log(answerKey)
+  return Math.round(stringSimilarity.compareTwoStrings(lyrics.join(' '), answerKey)*100);
+}
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
   // score calculation
  
-  let newScore = req.body.lyrics.length  // better score calculationn D:
-  socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
+ 
   Game.findById(req.body.gameID).then((game) => {
+
+    let newScore = similarity(req.body.lyrics, game.answerKey) // better score calculationn D:
+    socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
+
     let arr = game.gameData
     arr = arr.filter((obj) => {return obj.userId !== req.user._id})
     arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
