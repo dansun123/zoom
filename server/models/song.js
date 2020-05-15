@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const SongSchema = new mongoose.Schema({
   answerKey: String,
-  iTunesIdentifier: String,
+  title: String,
+  artist: String,
 });
 
 // compile model from schema

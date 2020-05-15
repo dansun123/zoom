@@ -6,7 +6,8 @@
 | This file defines the routes for your server.
 |
 */
-
+require("dotenv").config();
+const API_KEY = process.env.API_KEY;
 const express = require("express");
 var request = require('request');
 const utf8 = require('utf8');
@@ -25,6 +26,59 @@ const router = express.Router();
 
 //initialize socket
 const socket = require("./server-socket");
+
+var api = require('genius-api');
+var genius = new api(process.env.GENIUS_CLIENT_ACCESS_TOKEN);
+var getLyrics = require('genius-lyrics-api').getLyrics;
+ 
+// //get annotation
+// genius.annotation(6737668).then(function(response) {
+//   console.log(response.annotation);
+// });
+ 
+// //get referents by song_id, with options
+// genius.referents({song_id: 378195}, {per_page: 2}).then(function(response) {
+//   console.log('referents', response.referents);
+// });
+ 
+// //get referents by web_page_id, with options
+// genius.referents({web_page_id: 10347}, {per_page: 5}).then(function(response) {
+//   console.log('referents', response.referents);
+// });
+ 
+// //get song
+// genius.song(378195).then(function(response) {
+//   console.log('song', response.song);  
+// });
+ 
+// //get artist
+// genius.artist(16775).then(function(response) {
+//   console.log('artist', response.artist);
+// });
+ 
+// //get web page, with options
+// genius.webPage({raw_annotatable_url: 'https://docs.genius.com'}).then(function(response) {
+//   console.log('web page', response.web_page);
+// });
+ 
+// search
+// genius.search('Run the Jewels').then(function(response) {
+//   console.log('hits', response.hits);
+//   genius.annotation(response.hits[0].result.id).then((response) => {
+//     console.log(response.annotation);
+//   });
+//   genius.song(response.hits[0].result.id).then(function(response) {
+//     console.log('song', response.song);  
+//   });
+// });
+ 
+// //error handling á la promise
+// genius.song(378195).then(function(response) {
+//   console.log('song', response.song);
+// }).catch(function(error) {
+//   console.error(error);
+// });
+
 
 router.post("/login", auth.login);
 router.post("/logout", auth.logout);
@@ -121,8 +175,59 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
   })
 });
 
-router.post("/songLink", auth.ensureLoggedIn, (req, res) => {
+router.get("/songLyrics", (req, res) => {
+  console.log(req.query.title)
+  request('https://itunes.apple.com/search?term='+utf8.encode(usersong)+'&entity=song&limit=1', (error, response, body) => {
+    if (!error && response.statusCode == 200) {
+      
+      let songURL = JSON.parse(body).results[0].previewUrl
+    }
+  })
+  genius.search(req.query.title).then(function(response1) {
+    genius.song(response1.hits[0].result.id).then(function(response) {
+      console.log('song', response.song); 
+      let title = response.song.title;
+      let primary_artist =  response.song.primary_artist.name;
+      let featured_artists = response.song.featured_artists;
+      let art_url = response.song_art_image_url;
+      let id = response.song.id;
+      let embed_content = response.embed_content;
+      const options = {
+        apiKey: process.env.GENIUS_CLIENT_ACCESS_TOKEN, // genius developer access token
+        title: title,
+        artist: primary_artist,
+        optimizeQuery: true
+      }
+      console.log(options)
+      getLyrics(options).then(answer => {
+        console.log("lyrics")
+        console.log(answer)
+        res.send({
+          title: title,
+          primary_artist: primary_artist,
+          featured_artists: featured_artists,
+          art_url: art_url,
+          id: id,
+          lyrics: answer,
+          //embed_content: embed_content
+        })
+      })
+    });
+  });
+})
 
+
+router.post("/songLink", auth.ensureLoggedIn, (req, res) => {
+  let answerKey = req.body.answerKey
+  let title = req.body.title
+  let artist = req.body.artist
+  const song = new Song({
+    answerKey: answerKey,
+    title: title,
+    artist: artist,
+  })
+  song.save();
+  res.send();
 })
 
 
