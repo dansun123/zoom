@@ -7,6 +7,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
 import Select from "@material-ui/core/Select";
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from "@material-ui/core/Dialog";
@@ -20,6 +21,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import MenuItem from "@material-ui/core/MenuItem";
 
 import SongQueue from "../modules/SongQ"
+import Timer from "../modules/Timer"
 import NotFound from "./NotFound"
 import Music from "../modules/Music"
 import "../../utilities.css";
@@ -44,6 +46,7 @@ class Room extends Component {
         super(props);
         this.state = {
             roomID: String(this.props.computedMatch.params.id),
+            gameID: "",
             users: undefined,
             status: "waitingToFinish",
             isLoading: true,
@@ -52,13 +55,16 @@ class Room extends Component {
             songURL: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a",
             timeToStart: 3,
             gameData: [],
-            queue: []
+            queue: [],
+            lyrics: [],
+            currentWord: ""
         }
     }
     componentDidMount() {
         post("/api/joinRoom", {roomID: this.state.roomID}).then((data) => {
             this.setState({users: data.userList, queue: data.queue})
             this.setState({isLoading: false})
+            console.log(data.status)
             if((data.status === "inProgress") || (data.status === "timer")) {
                 this.setState({status: "waitingToFinish"})
             }
@@ -83,13 +89,17 @@ class Room extends Component {
         })
 
         socket.on("updateGameScore", (update) => {
-            
+            let arr = this.state.gameData
+            arr = arr.filter((obj) => {return obj.userId !== update.userId})
+            arr.push({userId: update.userId,  userName: update.userName, score: update.score, lyrics: update.lyrics})
+            this.setState({gameData: arr})
+    
         })
 
         socket.on("startTimer", (data) => {
             if(this.state.roomID !== data.roomID) return;
 
-            this.setState({status: "timer", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime, gameData: this.state.gameData})
+            this.setState({status: "timer", lyrics: [], currentWord: "", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime, gameData: data.gameData, gameID: data.gameID})
             let counter = 0
             var interval = setInterval(() => {
                 let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
@@ -137,7 +147,7 @@ class Room extends Component {
         }
 
         let blankGameData = this.state.users.map((user) => {
-            return {userId: user.userId, userName: user.userName, score: 0}
+            return {userId: user.userId, userName: user.userName, score: 0, lyrics: []}
         })
         
         let body = <></>
@@ -175,7 +185,37 @@ class Room extends Component {
             body = 
             <>
             <Music url = {this.state.songURL}></Music>
-            
+            <Timer endTime={this.state.endTime} />
+            <TextField
+          id="filled-basic"
+          label="Lyrics"
+          variant="outlined"
+          style={{color: "#678efd"}}
+          autoFocus
+          fullWidth
+          autoComplete='off' 
+          value={this.state.currentWord}
+          
+          onChange={(event) => {
+            this.setState({ currentWord: event.target.value });
+          }}
+          onKeyPress = {(event) => {
+            if(event.charCode === 32) {
+                let lyrics = this.state.lyrics
+                lyrics.push(this.state.currentWord)
+                this.setState({lyrics: lyrics, currentWord: ""})
+                post("/api/updateGameData", {gameID: this.state.gameID, lyrics: this.state.lyrics})
+              /*
+              submitAnswer(this.state.theirAnswer)
+              this.setState({
+               
+                theirAnswer: "",
+              });
+              */
+            }
+          }}
+        />
+       
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
             </>
 
@@ -184,6 +224,7 @@ class Room extends Component {
             body = 
             <>
             <h1>Results</h1>
+            <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start New Game</Button>
             </>
 

@@ -4,7 +4,7 @@ const GameSchema = new mongoose.Schema({
   songID: String,
   endTime: Date,
   gameData: [{
-    userID: String,
+    userId: String,
     userName: String,
     score: Number
   }],

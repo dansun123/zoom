@@ -14,17 +14,7 @@ export default function Timer(props) {
   if(value <= 3 && (value >= -5) && (color !== "#FF0000")) {
     setColor("#FF0000")
   }
-  if(value <= 0) {
-    /*
-    post("api/gameFinished", {gameID: props.gameID}).then(() => {
-      if(props.host.userID === props.userID) {
-      post("api/changeRatings", {gameID: props.gameID, gameData: props.gameData, ratingType: props.ratingType})
-      }
-    })
-    */
-    props.finish();
-  
-  }
+ 
   
   return (
     <h1 style={{color: color, display: "flex", justifyContent: "center"}}>{value}</h1>
