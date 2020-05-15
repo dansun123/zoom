@@ -37,10 +37,17 @@ class InputSong extends React.Component {
     handleFetch = event => {
         event.preventDefault();
         // this.sendMessage();
-        console.log("https://api.musixmatch.com/ws/1.1/track.search?apikey="+API_KEY+"&q_track="+this.state.title+"&q_artist="+this.state.artist)
         get("/api/songLyrics", {title: this.state.title, artist: this.state.artist}).then((response) => {
-            this.setState({answerKey: response.lyrics})
-            console.log("track.lyrics.get?apikey="+API_KEY+"&track_id="+response.track_id)
+            this.setState({
+                answerKey: response.answerKey, 
+                title: response.title, 
+                artist: response.primaryArtist,
+                featuredArtists: response.featuredArtists,
+                artUrl: response.artUrl,
+                id: response.id,
+                songUrl: response.url,
+            })
+            // console.log("track.lyrics.get?apikey="+API_KEY+"&track_id="+response.track_id)
         })
     };
 
@@ -55,6 +62,8 @@ class InputSong extends React.Component {
     render() {
       return (
         <Box>
+                    <button onClick = {()=>{console.log(this.state)}}>log InputSong state</button>
+
             <TextField
             label="Title"
             variant="outlined"
@@ -81,7 +90,9 @@ class InputSong extends React.Component {
                 }
             }}> Fetch
             </button>
-            <Music url = {this.state.url}/>
+            {this.state.featuredArtists ? <div>Featuring {this.state.featuredArtists}</div>: null}
+            {this.state.artUrl ? <img src = {this.state.artUrl} style={{width:"100px", height: "100px"}}/>: null}
+            {this.state.songUrl ? <Music url = {this.state.songUrl}/>: null}
             <TextField
             label="AnswerKey"
             variant="outlined"

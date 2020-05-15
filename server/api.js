@@ -182,54 +182,56 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
 
 router.get("/songLyrics", (req, res) => {
   console.log(req.query.title)
-  request('https://itunes.apple.com/search?term='+utf8.encode(usersong)+'&entity=song&limit=1', (error, response, body) => {
+  request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title)+'&entity=song&limit=1', (error, response, body) => {
     if (!error && response.statusCode == 200) {
-      
       let songURL = JSON.parse(body).results[0].previewUrl
+      genius.search(req.query.title).then(function(response1) {
+        genius.song(response1.hits[0].result.id).then(function(response) {
+          console.log('song', response.song); 
+          let title = response.song.title;
+          let primaryArtist =  response.song.primary_artist.name;
+          let featuredArtists = response.song.featured_artists;
+          let artUrl = response.song.song_art_image_url;
+          let id = String(response.song.id);
+          let embedContent = response.embed_content;
+          const options = {
+            apiKey: process.env.GENIUS_CLIENT_ACCESS_TOKEN, // genius developer access token
+            title: title,
+            artist: primaryArtist,
+            optimizeQuery: true
+          }
+          console.log(options)
+          getLyrics(options).then(answer => {
+            console.log("lyrics")
+            // console.log(answer)
+            res.send({
+              title: title,
+              primaryArtist: primaryArtist,
+              featuredArtists: featuredArtists,
+              artUrl: artUrl,
+              id: id,
+              answerKey: answer,
+              url: songURL,
+              //embedContent: embedContent
+            })
+          })
+        });
+      });
     }
   })
-  genius.search(req.query.title).then(function(response1) {
-    genius.song(response1.hits[0].result.id).then(function(response) {
-      console.log('song', response.song); 
-      let title = response.song.title;
-      let primary_artist =  response.song.primary_artist.name;
-      let featured_artists = response.song.featured_artists;
-      let art_url = response.song_art_image_url;
-      let id = response.song.id;
-      let embed_content = response.embed_content;
-      const options = {
-        apiKey: process.env.GENIUS_CLIENT_ACCESS_TOKEN, // genius developer access token
-        title: title,
-        artist: primary_artist,
-        optimizeQuery: true
-      }
-      console.log(options)
-      getLyrics(options).then(answer => {
-        console.log("lyrics")
-        console.log(answer)
-        res.send({
-          title: title,
-          primary_artist: primary_artist,
-          featured_artists: featured_artists,
-          art_url: art_url,
-          id: id,
-          lyrics: answer,
-          //embed_content: embed_content
-        })
-      })
-    });
-  });
 })
 
 
 router.post("/songLink", auth.ensureLoggedIn, (req, res) => {
-  let answerKey = req.body.answerKey
-  let title = req.body.title
-  let artist = req.body.artist
   const song = new Song({
-    answerKey: answerKey,
-    title: title,
-    artist: artist,
+    answerKey: req.body.answerKey,
+    title: req.body.title,
+    primaryArtist: req.body.primaryArtist,
+    featuredArtists: req.body.featuredArtists,
+    artUrl: req.body.artUrl,
+    geniusID: req.body.geniusID,
+    songUrl: req.body.songUrl,
+    embedContent: req.body.embedContent,
   })
   song.save();
   res.send();
