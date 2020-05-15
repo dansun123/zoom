@@ -102,7 +102,12 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
               userList.push({userId: user2._id, userName: user2.userName})
               if(userList.length === users.length) {
                 
-                Game.find({roomID: req.body.roomID}).then((game) => {
+                Game.findOne({
+                  $or: [
+                    {roomID: req.body.roomID, status: "inProgress"},
+                    {roomID: req.body.roomID, status: "timer"}
+                       ]
+                }).then((game) => {
                   if(game) {
                     res.send({userList: userList, status: game.status, queue: room.queue});
                   }
@@ -133,7 +138,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
     users.forEach((user) => {
       counter += 1
       if(user.roomID === req.body.roomID) {
-        gameData.push({userID: user._id, userName: user.userName, score: 0, lyrics: []})
+        gameData.push({userId: user._id, userName: user.userName, score: 0, lyrics: []})
       }
 
       if(counter === users.length) {
@@ -201,7 +206,7 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
   // score calculation
  
   let newScore = req.body.lyrics.length  // better score calculationn D:
-  socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore})
+  socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
   Game.findById(req.body.gameID).then((game) => {
     let arr = game.gameData
     arr = arr.filter((obj) => {return obj.userId !== req.user._id})

@@ -8,14 +8,14 @@ import ListItemText from '@material-ui/core/ListItemText';
 import LinearProgress from '@material-ui/core/LinearProgress'
 export default function ScorePage(props) {
   const [maxValue, setMaxValue] = useState(15)
-  let scoreListElements = props.gameData.sort((a, b) => {return a.score - b.score}).map((user, place) => {
-    let color = ""
+  let scoreListElements = props.gameData.sort((a, b) => {return b.score - a.score}).map((user, place) => {
+    let color = "#6c57f5"
     let fontWeight = 'normal'
-    let barColor = "primary"
+
     if(user.userId === props.userId) {
-      color = "#6c57f5"
+      color = "#678efd"
       fontWeight = 'bold'
-      barColor = "secondary"
+
     }
  
    
@@ -27,9 +27,9 @@ export default function ScorePage(props) {
     }
     return <ListItem button>
       
-    <ListItemText primary={(user.userName || "") + ": " + (user.score || "0") + " "} />
-    <LinearProgress color={barColor} style={{ zIndex: 2, width: "80%", marginLeft: "auto"}} variant="determinate" value={Math.round(Math.max(0, Math.min(100, user.score*100.0/(maxValue))))} />
-  </ListItem>
+    <ListItemText style={{fontWeight: "900", color: color, fontSize: "large"}} primary={(user.userName || "") + ": " + (user.score || "0") + " "} />
+    <h1 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h1>
+    </ListItem>
   })
 
   let height = "370px";
