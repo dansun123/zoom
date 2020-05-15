@@ -111,7 +111,7 @@ class Room extends Component {
             
             }, 1000)
 
-            let newQueue = this.state.queue.filter((song) => {return song !== data.song})
+            let newQueue = this.state.queue.filter((song) => {return song.songID !== data.songID})
             this.setState({queue: newQueue})
         })
 

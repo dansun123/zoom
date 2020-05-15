@@ -5,6 +5,8 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import TextField from "@material-ui/core/TextField";
+import Autocomplete from '@material-ui/lab/Autocomplete';
+
 import { get, post } from "../../utilities";
 
 
@@ -14,24 +16,35 @@ class SongQueue extends React.Component {
         this.state = { 
             messageText:'',
             lastMessage: new Date(),
+            songOptions: [],
+            song: null
         }
     }
 
-    handleChange = event => {
-        this.setState({ messageText: event.target.value });
+    componentDidMount() {
+        get("/api/songs").then((songs) => {
+            this.setState({songOptions: songs})
+        })
+    }
+
+    handleChange = (event, value) => {
+        console.log(value)
+        this.setState({ song: value });
     };
 
     handleSubmit = event => {
         event.preventDefault();
         // this.sendMessage();
-        post("/api/newSongReq", {newSong: this.state.messageText, roomID: this.props.roomID}).then(() => {
-            this.setState({ messageText: ""})
+        if(this.state.song === null) return;
+        console.log(this.state.song)
+        post("/api/newSongReq", {newSong: this.state.song, roomID: this.props.roomID}).then(() => {
+            this.setState({ song: null})
         });
     };
 
     render() {
-        let songQueue = this.props.queue.map((title) => {
-            return <ListItem><ListItemText primary={title}/></ListItem>
+        let songQueue = this.props.queue.map((song) => {
+            return <ListItem><ListItemText primary={song.title + " " + song.primaryArtist}/></ListItem>
         })
       return (
       <Box>
@@ -39,24 +52,29 @@ class SongQueue extends React.Component {
             <List>{songQueue}</List>
             
         </Box>
-        <TextField
+        <Autocomplete
+  options={this.state.songOptions}
+  getOptionLabel={(option) => {return option.title + " " + option.primaryArtist}}
+  fullWidth
+  value={this.state.song}
+  onChange={this.handleChange}
+  renderInput={(params) => <TextField {...params} label="Add Song to Queue" variant="outlined" size="small" />}
+/>
+        <Button
           
-        label="Add Song to Queue"
-        variant="outlined"
+        
         size="small"
-        value={this.state.messageText}
         fullWidth
-        onChange={this.handleChange}
-        onKeyPress = {(event) => {
-            if(event.charCode === 13) {
+        onClick = {(event) => {
+           
                 if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {
                     this.setState({lastMessage: new Date()})
                     this.handleSubmit(event)
                 }
-            }
+            
         }}
 
-        />
+        >Add</Button>
         </Box>
       );
     }
