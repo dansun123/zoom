@@ -26,9 +26,13 @@ export default function ScorePage(props) {
       if(place >= props.cutOff) return <></>
     }
     return <ListItem button>
-      
-    <ListItemText style={{fontWeight: "900", color: color, fontSize: "large"}} primary={(user.userName || "") + ": " + (user.score || "0") + " "} />
+    <Box width={"300px"}>
+    <h1 style={{fontWeight: "900", color: "#F92035"}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h1>
+    </Box>
+    <Box width={"calc(100% - 300px)"}>
     <h1 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h1>
+    </Box>
+    
     </ListItem>
   })
 

@@ -17,6 +17,6 @@ export default function Timer(props) {
  
   
   return (
-    <h1 style={{color: color, display: "flex", justifyContent: "center"}}>{value}</h1>
+    <h1 style={{color: color, display: "flex", justifyContent: "center"}}>{value+1}</h1>
   );
 };
