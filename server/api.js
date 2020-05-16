@@ -221,7 +221,7 @@ router.get("/songLyrics", (req, res) => {
               // featuredArtists: featuredArtists,
               artUrl: artUrl,
               id: id,
-              answerKey: (answer ? answer.substring(0, Math.min(answer.length, 2000)) : null),
+              answerKey: (answer ? answer.substring(0, Math.min(answer.length, 1500)) : null),
               url: songURL,
               embedContent: embedContent
             })
@@ -372,6 +372,22 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
 
   res.send({});
 });
+
+router.post("/updateSongs", (req,res) => {
+  Song.find({}).then((songs) => {
+    songs.forEach((song) => {
+      request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist)+'&entity=song&limit=1', (error, response, body) => {
+      if (!error && response.statusCode == 200) {
+        
+        let songUrl = JSON.parse(body).results[0].previewUrl
+        song.songUrl = songUrl
+        song.save();
+      }
+    })
+    })
+  })
+  res.send({})
+})
 
 router.post("/newSongReq", auth.ensureLoggedIn, (req, res) => {
   Room.findOne({roomID: req.body.roomID}).then((room) => {
