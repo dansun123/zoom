@@ -280,89 +280,108 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
         let endTime = new Date((new Date()).getTime() + 33*1000) 
         let startTime = new Date((new Date()).getTime() + 3*1000) 
 
-        let parameter = {}
-        if(req.body.song) parameter = {_id: req.body.song.songID}
-        Song.findOne(parameter).then((song) => {
-          const game = new Game({
-            songID: song._id,
-            answerKey: song.answerKey,
-            endTime: endTime,
-            gameData: gameData,
-            roomID: req.body.roomID,
-            status: "timer" // inProgress, timer, finished. 
-          });
-          game.save().then(() => {
-            // API Get
-                Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  let arr = room.queue
-                  console.log(song._id)
-                  
-                  arr = arr.filter((song2) => {return song2.songID !== song._id.toString()})
-                  console.log(arr)
-                  room.queue = arr
-                  room.save()
-                })
-  
-                socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: song.songUrl, endTime: endTime, startTime: startTime, gameData: gameData})
-  
-                setTimeout(() => {
-                  Game.findById(game._id).then((newGame) => {
-                    newGame.status = "inProgress"
-         
-                    newGame.save().then(()=> {
-                      socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
+        
+
+        // get random Song
+        Song.aggregate(
+          [ { $sample: { size: 1 } } ]
+       ).then((songs) => {
+          songs.forEach(randomSong => {
+
+            let parameter = {_id: randomSong._id}
+            if(req.body.song) parameter = {_id: req.body.song.songID}
+
+            Song.findOne(parameter).then((song) => {
+              const game = new Game({
+                songID: song._id,
+                answerKey: song.answerKey,
+                endTime: endTime,
+                gameData: gameData,
+                roomID: req.body.roomID,
+                status: "timer" // inProgress, timer, finished. 
+              });
+              game.save().then(() => {
+                // API Get
+                    Room.findOne({roomID: req.body.roomID}).then((room) => {
+                      let arr = room.queue
+                      console.log(song._id)
+                      
+                      arr = arr.filter((song2) => {return song2.songID !== song._id.toString()})
+                      console.log(arr)
+                      room.queue = arr
+                      room.save()
                     })
-                  })
-                 
-                  
-                }, 3000)
-                setTimeout(() => {
-                  Game.findById(game._id).then((newGame) => {
-                    newGame.status = "finished"
-                    let finishedGameData = newGame.gameData
-                    let lyrics = newGame.answerKey
-                    lyrics = lyrics.replace("\n", " ").split(" ")
-                    finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics})
-                    newGame.save().then(()=> {
-                      socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
-                   
-                      gameData.forEach((obj) => {
-                        User.findById(obj.userId).then((activeuser) => {
-                          let curcount = activeuser.inactivityCount;
-                          if(obj.lyrics.length > 0) 
-                            activeuser.inactivityCount = 0
-                          else {
-                            if(curcount >= 2) {
-                              socket.getIo().emit("inactive", {userId: obj.userId})
-                              activeuser.roomID = "Lobby"
-                              let message = new Message({
-                                sender: {userId: obj.userId, userName: activeuser.userName},
-                                roomID: req.body.roomID, 
-                                message: activeuser.userName + " left the Room",
-                                systemMessage: true
-                              })
-                              socket.getIo().emit("newMessage", message)
-                              activeuser.inactivityCount = 0
-                            } 
-                            else {
-                              activeuser.inactivityCount = curcount + 1
-                            }
-                          }
-                          activeuser.save()
-
-
+      
+                    socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: song.songUrl, endTime: endTime, startTime: startTime, gameData: gameData})
+      
+                    setTimeout(() => {
+                      Game.findById(game._id).then((newGame) => {
+                        newGame.status = "inProgress"
+             
+                        newGame.save().then(()=> {
+                          socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
                         })
                       })
-                   
-                    })
+                     
+                      
+                    }, 3000)
+                    setTimeout(() => {
+                      Game.findById(game._id).then((newGame) => {
+                        newGame.status = "finished"
+                        let finishedGameData = newGame.gameData
+                        let lyrics = newGame.answerKey
+                        lyrics = lyrics.replace("\n", " ").split(" ")
+                        finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics})
+                        newGame.save().then(()=> {
+                          socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
+                       
+                          finishedGameData.forEach((obj) => {
+                            if(obj.userId === "0") return;
+                            User.findById(obj.userId).then((activeuser) => {
+                              let curcount = activeuser.inactivityCount;
+                              if(obj.lyrics.length > 0) 
+                                activeuser.inactivityCount = 0
+                              else {
+                                if(curcount >= 2) {
+                                  socket.getIo().emit("inactive", {userId: obj.userId})
+                                  activeuser.roomID = "Lobby"
+                                  let message = new Message({
+                                    sender: {userId: obj.userId, userName: activeuser.userName},
+                                    roomID: req.body.roomID, 
+                                    message: activeuser.userName + " left the Room",
+                                    systemMessage: true
+                                  })
+                                  socket.getIo().emit("newMessage", message)
+                                  activeuser.inactivityCount = 0
+                                } 
+                                else {
+                                  activeuser.inactivityCount = curcount + 1
+                                }
+                              }
+                              activeuser.save()
+    
+    
+                            })
+                          })
+                       
+                        })
+    
+    
+                      })
+                    }, 33000)
+          
+                 
+              })
+            })
 
 
-                  })
-                }, 33000)
-      
-             
+
+
+
+
           })
-        })
+       })
+        
 
         
       }
