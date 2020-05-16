@@ -20,7 +20,7 @@ class AudioDataContainer extends React.Component {
     analyser.fftSize = 64
     source.connect(audioContext.destination);
     source.connect(analyser);
-    audioFile.play()
+    // audioFile.play()
       this.setState({
         audioData: analyser
       })
