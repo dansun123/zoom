@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema({
   googleid: String,
   userName: String,
   roomID: String,
+  inactivityCount: {type: Number, default: 0}
 });
 
 // compile model from schema

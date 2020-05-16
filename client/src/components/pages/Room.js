@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom' 
 import sound from "../images/RadioWaves.png";
 import silent from "../images/RadioNoWaves.png";
 import Chat from '../modules/Chat.js';
@@ -60,7 +61,9 @@ class Room extends Component {
             gameData: [],
             queue: [],
             lyrics: [],
-            currentWord: ""
+            currentWord: "",
+            redirect: false,
+            refresh: false,
         }
     }
     componentDidMount() {
@@ -141,6 +144,21 @@ class Room extends Component {
         socket.on("finished", (data) => {
             if(this.state.roomID !== data.roomID) return;
             this.setState({status: "finished", timeToStart: 3, gameData: data.gameData})
+            
+               
+            
+        })
+
+        socket.on("disconnect", () => {
+            this.setState({refresh: true})
+                
+            
+        })
+
+        socket.on("inactive", (data) => {
+            if(data.userId === this.props.userId) {
+                this.setState({redirect: true})
+            }
         })
 
     }
@@ -148,6 +166,12 @@ class Room extends Component {
     
 
     render() {
+        if(this.state.redirect) {
+            return <Redirect to="/" />
+        }
+        if(this.state.refresh) {
+            return <Redirect to={"/"+this.state.roomID} />
+        }
         if(this.state.isLoading) {
             return <>
             <h1>Loading...</h1>

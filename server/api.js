@@ -262,6 +262,8 @@ router.post("/songLink", (req, res) => {
 
 
 
+
+
 router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
   let gameData = []
   User.find({}).then((users) => {
@@ -323,7 +325,38 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                     finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics})
                     newGame.save().then(()=> {
                       socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
+                   
+                      gameData.forEach((obj) => {
+                        User.findById(obj.userId).then((activeuser) => {
+                          let curcount = activeuser.inactivityCount;
+                          if(obj.lyrics.length > 0) 
+                            activeuser.inactivityCount = 0
+                          else {
+                            if(curcount >= 2) {
+                              socket.getIo().emit("inactive", {userId: obj.userId})
+                              activeuser.roomID = "Lobby"
+                              let message = new Message({
+                                sender: {userId: obj.userId, userName: activeuser.userName},
+                                roomID: req.body.roomID, 
+                                message: activeuser.userName + " left the Room",
+                                systemMessage: true
+                              })
+                              socket.getIo().emit("newMessage", message)
+                              activeuser.inactivityCount = 0
+                            } 
+                            else {
+                              activeuser.inactivityCount = curcount + 1
+                            }
+                          }
+                          activeuser.save()
+
+
+                        })
+                      })
+                   
                     })
+
+
                   })
                 }, 33000)
       
@@ -381,6 +414,11 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
     systemMessage: systemMessage
   })
   socket.getIo().emit("newMessage", message)
+  User.findById(req.user._id).then((user) => {
+    user.inactivityCount = 0
+
+    user.save()
+  })
 
   res.send({});
 });
