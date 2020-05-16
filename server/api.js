@@ -150,6 +150,17 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
         user.roomID = req.body.roomID;
         user.save().then(() => {
           socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
+          let message = new Message({
+            sender: {userId: req.user._id, userName: req.user.userName},
+            roomID: req.body.roomID, 
+            message: req.user.userName + " joined the Room",
+            systemMessage: true
+          })
+          socket.getIo().emit("newMessage", message)
+        
+
+
+          
           userList = []
           User.find({roomID: user.roomID}).then((users) => {
             users.forEach((user2) => {
@@ -287,7 +298,12 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                 
   
                 Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  room.queue = room.queue.filter((song2) => {return song2.songID !== song._id})
+                  let arr = room.queue
+                  console.log(song._id)
+                  
+                  arr = arr.filter((song2) => {return song2.songID !== song._id.toString()})
+                  console.log(arr)
+                  room.queue = arr
                   room.save()
                 })
   
@@ -345,7 +361,7 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
     socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
 
     let arr = game.gameData
-    arr = arr.filter((obj) => {return obj.userId !== req.user._id})
+    arr = arr.filter((obj) => {return obj.userId !== req.user._id.toString()})
     arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
     game.gameData = arr 
     game.markModified("gameData")
