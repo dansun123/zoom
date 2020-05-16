@@ -199,9 +199,7 @@ class Room extends Component {
         else if(this.state.status === "inProgress") {
             body = 
             <>
-            <Box style={{height: "220px", overflow: scroll}}>
-                <Music url = {this.state.songURL}></Music>
-            </Box>
+            
             <Timer endTime={this.state.endTime} />
             <TextField
           id="filled-basic"
@@ -270,8 +268,11 @@ class Room extends Component {
                      {body}
                 </Box>
                 <Box width={"400px"} >
-                    <Chat messages={this.props.chat} roomID={this.state.roomID} />
-                    <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>
+                
+                    {this.state.status === "inProgress" && window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
+                <Music url = {this.state.songURL} visual={true}></Music>
+            </Box> : <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>}
+            <Chat messages={this.props.chat} roomID={this.state.roomID} />
                 </Box>
                 </Grid>
                 

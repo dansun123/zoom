@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import Button from "@material-ui/core/Button";
 import AudioDataContainer from "./AudioDataContainer"
-
-
+import Box from "@material-ui/core/Box";
+import Grid from "@material-ui/core/Grid";
 
 class Music extends React.Component {
     constructor(props) {
@@ -35,11 +35,14 @@ class Music extends React.Component {
     render() {
       return (
         <>
+          <Grid container direction="column" style={{padding: "10px 10px 10px 10px"}}>
           {/* <div>pre</div> */}
-          <AudioDataContainer audio = {this.state.audio} />
+          <Box height={"130px"}></Box>
+          {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : ""}
           {/* <div>post</div> */}
           {/* <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> */}
           {/* <a href = {this.props.url}>SONGURL</a> */}
+          </Grid>
         </>
       );
     }

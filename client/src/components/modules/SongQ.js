@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
+import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -52,6 +53,8 @@ class SongQueue extends React.Component {
             <List>{songQueue}</List>
             
         </Box>
+        <Grid container direction="row" style={{alignItems: "center", justifyContent: "center"}}>
+        <Box width={"calc(100% - 80px)"}>
         <Autocomplete
   options={this.state.songOptions}
   getOptionLabel={(option) => {return option.title + " " + option.primaryArtist}}
@@ -60,21 +63,30 @@ class SongQueue extends React.Component {
   onChange={this.handleChange}
   renderInput={(params) => <TextField {...params} label="Add Song to Queue" variant="outlined" size="small" />}
 />
+        </Box>
+        <Box width="80px" height={1} >
         <Button
           
         
-        size="small"
-        fullWidth
-        onClick = {(event) => {
-           
-                if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {
-                    this.setState({lastMessage: new Date()})
-                    this.handleSubmit(event)
-                }
+          size="small"
+          fullWidth
+          style={{height: "100%"}}
+          onClick = {(event) => {
+             
+                  if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {
+                      this.setState({lastMessage: new Date()})
+                      this.handleSubmit(event)
+                  }
+              
+          }}
+  
+          >Add</Button>
+        </Box>
+        </Grid>
             
-        }}
-
-        >Add</Button>
+        
+        
+        
         </Box>
       );
     }
