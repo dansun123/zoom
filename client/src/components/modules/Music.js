@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import Button from "@material-ui/core/Button";
 import AudioDataContainer from "./AudioDataContainer"
-
+import waves from "../images/RadioWaves.png";
 
 
 class Music extends React.Component {
@@ -36,9 +36,11 @@ class Music extends React.Component {
       return (
         <>
           {/* <div>pre</div> */}
+          {window.AudioContext ? (
           <AudioDataContainer audio = {this.state.audio} />
+          ) : <img src = {waves} style={{width: "100px"}}/>}
           {/* <div>post</div> */}
-          {/* <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> */}
+          <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>
           {/* <a href = {this.props.url}>SONGURL</a> */}
         </>
       );
