@@ -25,12 +25,12 @@ export default function ScorePage(props) {
     if(Object.keys(props).includes("cutOff")) {
       if(place >= props.cutOff) return <></>
     }
-    return <ListItem button>
-    <Box width={"300px"}>
-    <h1 style={{fontWeight: "900", color: "#0000FF"}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h1>
+    return <ListItem button dense>
+    <Box width={"200px"}>
+    <h3 style={{fontWeight: "900", color: "#0000FF"}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h3>
     </Box>
-    <Box width={"calc(100% - 300px)"}>
-    <h1 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h1>
+    <Box width={"calc(100% - 200px)"}>
+    <h3 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h3>
     </Box>
     
     </ListItem>

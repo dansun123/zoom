@@ -158,7 +158,7 @@ class Room extends Component {
         else if(this.state.status === "waitingToStart") {
             body = 
             <>
-            <h3> 
+            <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
                     Invite Link: {window.location.href}
                     <CopyToClipboard text={window.location.href}
                         onCopy={() => {this.setState({copied:true})}}>
@@ -168,7 +168,7 @@ class Room extends Component {
                         }
                     </CopyToClipboard>
                  </h3>
-            <h1>Waiting to Start</h1> 
+            <h2 style={{display: "flex", justifyContent: "center"}}>Waiting to Start</h2> 
             <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start Game</Button>
             </>
@@ -176,7 +176,7 @@ class Room extends Component {
         else if(this.state.status === "timer") {
             body = 
             <>
-            <h1>Game starting in {this.state.timeToStart} seconds</h1>
+            <h2 style={{display: "flex", justifyContent: "center"}}>Game starting in {this.state.timeToStart} seconds</h2>
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
             </>
 
@@ -223,7 +223,7 @@ class Room extends Component {
         else if(this.state.status === "finished") {
             body = 
             <>
-            <h1>Results</h1>
+            <h2 style={{display: "flex", justifyContent: "center"}}>Results</h2>
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start New Game</Button>
             </>

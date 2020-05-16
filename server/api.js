@@ -150,6 +150,17 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
         user.roomID = req.body.roomID;
         user.save().then(() => {
           socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
+          let message = new Message({
+            sender: {userId: req.user._id, userName: req.user.userName},
+            roomID: req.body.roomID, 
+            message: req.user.userName + " joined the Room",
+            systemMessage: true
+          })
+          socket.getIo().emit("newMessage", message)
+        
+
+
+          
           userList = []
           User.find({roomID: user.roomID}).then((users) => {
             users.forEach((user2) => {
@@ -282,17 +293,21 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             // API Get
             
             
-            request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist)+'&entity=song&limit=1', (error, response, body) => {
-              if (!error && response.statusCode == 200) {
+            
                
-                let songURL = JSON.parse(body).results[0].previewUrl
+                
   
                 Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  room.queue = room.queue.filter((song2) => {return song2.songID !== song2._id})
+                  let arr = room.queue
+                  console.log(song._id)
+                  
+                  arr = arr.filter((song2) => {return song2.songID !== song._id.toString()})
+                  console.log(arr)
+                  room.queue = arr
                   room.save()
                 })
   
-                socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: songURL, endTime: endTime, startTime: startTime, gameData: gameData})
+                socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: song.songUrl, endTime: endTime, startTime: startTime, gameData: gameData})
   
                 setTimeout(() => {
                   Game.findById(game._id).then((newGame) => {
@@ -314,8 +329,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                   })
                 }, 33000)
       
-              }
-            })
+             
           })
         })
 
@@ -347,7 +361,7 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
     socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
 
     let arr = game.gameData
-    arr = arr.filter((obj) => {return obj.userId !== req.user._id})
+    arr = arr.filter((obj) => {return obj.userId !== req.user._id.toString()})
     arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
     game.gameData = arr 
     game.markModified("gameData")
