@@ -28,7 +28,8 @@ export default function VisualDemo(props) {
       for(let i=0; i<props.frequencyBandArray.length; i++){
         let num = props.frequencyBandArray[i]
         domElements[num].style.backgroundColor = `rgb(255, 0, ${amplitudeValues.current[num]})`
-        domElements[num].style.height = `${2*(amplitudeValues.current[num]-70)}px`
+        domElements[num].style.height = `${amplitudeValues.current[num]-60}px`
+        domElements[num].style.width= `2%`
       }
     };
 

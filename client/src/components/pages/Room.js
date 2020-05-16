@@ -199,7 +199,9 @@ class Room extends Component {
         else if(this.state.status === "inProgress") {
             body = 
             <>
-            <Music url = {this.state.songURL}></Music>
+            <Box style={{height: "220px", overflow: scroll}}>
+                <Music url = {this.state.songURL}></Music>
+            </Box>
             <Timer endTime={this.state.endTime} />
             <TextField
           id="filled-basic"
