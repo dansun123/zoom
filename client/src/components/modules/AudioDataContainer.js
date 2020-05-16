@@ -1,6 +1,5 @@
 import React from 'react';
 import VisualDemo from './VisualDemo';
-import soundFile from '../audio/Pretty.mp3';
 
 class AudioDataContainer extends React.Component {
 
@@ -9,13 +8,15 @@ class AudioDataContainer extends React.Component {
     this.state = {}
     this.frequencyBandArray = [...Array(25).keys()]
   }
+  componentDidMount = () => {
+    // this.initializeAudioAnalyser();
+  }
 
   initializeAudioAnalyser = () => {
-    const audioFile = new Audio();
+    const audioFile = this.props.audio;
     const audioContext = new AudioContext();
     const source = audioContext.createMediaElementSource(audioFile);
     const analyser = audioContext.createAnalyser();
-    audioFile.src = soundFile;
     analyser.fftSize = 64
     source.connect(audioContext.destination);
     source.connect(analyser);

@@ -19,6 +19,7 @@ import Slide from '@material-ui/core/Slide';
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import MenuItem from "@material-ui/core/MenuItem";
+// import "../modules/Audio.js";
 
 import SongQueue from "../modules/SongQ"
 import Timer from "../modules/Timer"
@@ -30,6 +31,8 @@ import { withRouter } from "react-router-dom";
 import { get, post } from "../../utilities";
 import { socket } from "../../client-socket.js";
 import ScorePage from "../modules/ScorePage";
+// import "../stylesheets/Audio.css";
+// import "../stylesheets/Audio.scss";
 
 function containsObject(obj, list) {
     var i;
@@ -252,6 +255,15 @@ class Room extends Component {
                 
                  {/*<img src = {silent}></img>*/}
                  <Grid container direction="row">
+                 {/* <div class="wrapper" id="wrapper">
+                <label class="file" for="file">
+                    choose a mp3 file
+                    <input id="file" type="file"/>
+                </label>
+                </div> */}
+                 {/* <h2 class="message">PLAY</h2>
+                <a id="badge" href="http://www.chromeexperiments.com/experiment/audio-cloud/" target="_blank"><img src="https://lab.ma77os.com/audio-cloud/img/b4.png" alt="See my Experiment on ChromeExperiments.com"/></a>
+                <a class="experiment-url" href="https://lab.ma77os.com/audio-cloud" target="_blank">source: lab.ma77os.com/audio-cloud</a> */}
                 <Box width={"calc(100% - 400px)"} >
                      {body}
                 </Box>

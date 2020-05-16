@@ -291,12 +291,6 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
           });
           game.save().then(() => {
             // API Get
-            
-            
-            
-               
-                
-  
                 Room.findOne({roomID: req.body.roomID}).then((room) => {
                   let arr = room.queue
                   console.log(song._id)
