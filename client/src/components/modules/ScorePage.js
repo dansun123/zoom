@@ -12,10 +12,17 @@ export default function ScorePage(props) {
     let color = "#6c57f5"
     let fontWeight = 'normal'
 
+    let nameColor = "#0000FF"
+
     if(user.userId === props.userId) {
       color = "#678efd"
       fontWeight = 'bold'
 
+    }
+    if(user.userId === "0") {
+      color = "#3bb033"
+      fontWeight = 'bold'
+      nameColor = "#3bb033"
     }
  
    
@@ -25,9 +32,10 @@ export default function ScorePage(props) {
     if(Object.keys(props).includes("cutOff")) {
       if(place >= props.cutOff) return <></>
     }
+    //console.log(user)
     return <ListItem button dense>
     <Box width={"200px"}>
-    <h3 style={{fontWeight: "900", color: "#0000FF"}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h3>
+    <h3 style={{fontWeight: "900", color: nameColor}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h3>
     </Box>
     <Box width={"calc(100% - 200px)"}>
     <h3 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h3>

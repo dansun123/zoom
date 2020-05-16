@@ -149,7 +149,7 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
       User.findById(req.user._id).then((user) => {
         user.roomID = req.body.roomID;
         user.save().then(() => {
-          socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName})
+          socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName, roomID: req.body.roomID})
           let message = new Message({
             sender: {userId: req.user._id, userName: req.user.userName},
             roomID: req.body.roomID, 
@@ -323,8 +323,12 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                 setTimeout(() => {
                   Game.findById(game._id).then((newGame) => {
                     newGame.status = "finished"
+                    let finishedGameData = newGame.gameData
+                    let lyrics = newGame.answerKey
+                    lyrics = lyrics.replace("\n", " ").split(" ")
+                    finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics})
                     newGame.save().then(()=> {
-                      socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: game.gameData})
+                      socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
                     })
                   })
                 }, 33000)
@@ -348,7 +352,7 @@ var stringSimilarity = require('string-similarity');
 let similarity = (lyrics, answerKey) => {
   //console.log(lyrics)
   //console.log(answerKey)
-  return Math.round(stringSimilarity.compareTwoStrings(lyrics.join(' '), answerKey)*100);
+  return Math.round(stringSimilarity.compareTwoStrings(lyrics.join(' '), answerKey.replace('\n', ' '))*100);
 }
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
@@ -358,7 +362,7 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
   Game.findById(req.body.gameID).then((game) => {
 
     let newScore = similarity(req.body.lyrics, game.answerKey) // better score calculationn D:
-    socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
+    socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics, roomID: req.body.roomID})
 
     let arr = game.gameData
     arr = arr.filter((obj) => {return obj.userId !== req.user._id.toString()})

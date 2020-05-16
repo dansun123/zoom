@@ -6,7 +6,8 @@ const GameSchema = new mongoose.Schema({
   gameData: [{
     userId: String,
     userName: String,
-    score: Number
+    score: Number,
+    lyrics: Array
   }],
   roomID: String,
   status: String, // inProgress, timer, finished. ,

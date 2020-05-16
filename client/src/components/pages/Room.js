@@ -73,6 +73,7 @@ class Room extends Component {
             }
         }) 
         socket.on("someoneJoinedRoom", (user) => {
+            if(user.roomID !== this.state.roomID) return;
             let newUsers  = this.state.users;
             if(newUsers && !containsObject(user, newUsers) && user.userId !== this.props.userId) {
                 newUsers.push(user)
@@ -89,6 +90,7 @@ class Room extends Component {
         })
 
         socket.on("updateGameScore", (update) => {
+            if(update.roomID !== this.state.roomID) return;
             let arr = this.state.gameData
             arr = arr.filter((obj) => {return obj.userId !== update.userId})
             arr.push({userId: update.userId,  userName: update.userName, score: update.score, lyrics: update.lyrics})
@@ -116,7 +118,7 @@ class Room extends Component {
         })
 
         socket.on("inProgress", (data) => {
-            
+            if(this.state.roomID !== data.roomID) return;
             if(this.state.status === "timer") {
                 this.setState({status: "inProgress"})
                 
@@ -125,7 +127,8 @@ class Room extends Component {
         })
 
         socket.on("finished", (data) => {
-            this.setState({status: "finished", timeToStart: 3})
+            if(this.state.roomID !== data.roomID) return;
+            this.setState({status: "finished", timeToStart: 3, gameData: data.gameData})
         })
 
     }
@@ -204,7 +207,7 @@ class Room extends Component {
                 let lyrics = this.state.lyrics
                 lyrics.push(this.state.currentWord)
                 this.setState({lyrics: lyrics, currentWord: ""})
-                post("/api/updateGameData", {gameID: this.state.gameID, lyrics: this.state.lyrics})
+                post("/api/updateGameData", {gameID: this.state.gameID, lyrics: this.state.lyrics, roomID: this.state.roomID})
               /*
               submitAnswer(this.state.theirAnswer)
               this.setState({

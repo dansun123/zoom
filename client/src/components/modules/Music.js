@@ -28,10 +28,12 @@ class Music extends React.Component {
     }
   
     render() {
+      //console.log("Song URL: " + this.props.url)
       return (
         <>
           <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>
-          <a href = {this.props.url}>SONGURL</a>
+          {/*<a href = {this.props.url}>SONGURL</a>*/}
+
         </>
       );
     }
