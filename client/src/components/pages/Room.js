@@ -209,7 +209,7 @@ class Room extends Component {
                  </h3>
             <h2 style={{display: "flex", justifyContent: "center"}}>Waiting to Start</h2> 
             <ScorePage gameData = {blankGameData} userId = {this.props.userId} />
-            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start Game</Button>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[0]})}}>Start Game</Button>
             </>
         }
         else if(this.state.status === "timer") {
@@ -264,7 +264,7 @@ class Room extends Component {
             <>
             <h2 style={{display: "flex", justifyContent: "center"}}>Results</h2>
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
-            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[this.state.queue.length-1]})}}>Start New Game</Button>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[0]})}}>Start New Game</Button>
             </>
 
         }

@@ -144,9 +144,9 @@ class App extends Component {
         <Router>
           <div>
             <Switch>
-              {/* <InputSong
+              <InputSong
                 exact path = "/input"
-              /> */}
+              />
               <div default>
                 <Topbar
                     userId={this.state.userId}
