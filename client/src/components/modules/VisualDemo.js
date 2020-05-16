@@ -1,4 +1,4 @@
-import React, { useRef }  from 'react';
+import React, { useRef , useState}  from 'react';
 import Paper from '@material-ui/core/Paper';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function VisualDemo(props) {
-
+    const [mounted, setMounted] = useState(false);
     const classes = useStyles();
 
     const amplitudeValues = useRef(null);
@@ -28,7 +28,7 @@ export default function VisualDemo(props) {
       for(let i=0; i<props.frequencyBandArray.length; i++){
         let num = props.frequencyBandArray[i]
         domElements[num].style.backgroundColor = `rgb(255, 0, ${amplitudeValues.current[num]})`
-        domElements[num].style.height = `${amplitudeValues.current[num]}px`
+        domElements[num].style.height = `${2*(amplitudeValues.current[num]-70)}px`
       }
     };
 
@@ -42,24 +42,14 @@ export default function VisualDemo(props) {
       requestAnimationFrame(runSpectrum)
     }
     
+    if(!mounted) {
+      handleStartBottonClick();
+      setMounted(true);
+    }
+
     return (
     
       <div>
-
-        <div>
-          <Tooltip
-            title="Start"
-            aria-label="Start"
-            placement="right">
-            <IconButton
-              id='startButton'
-              onClick={() => handleStartBottonClick()}
-              disabled={!!props.audioData ? true : false}>
-              <EqualizerIcon/>
-            </IconButton>
-          </Tooltip>
-        </div>
-
         <div className={classes.flexContainer}>
           {props.frequencyBandArray.map((num) =>
             <Paper

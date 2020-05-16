@@ -17,7 +17,7 @@ class Music extends React.Component {
   
     componentDidMount() {
       this.state.audio.addEventListener('ended', () => this.setState({ play: false }));
-      this.state.audio.volume = 0.2
+      this.state.audio.volume = 0.1
       this.state.audio.play()
       
     }
