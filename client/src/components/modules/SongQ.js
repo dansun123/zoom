@@ -56,13 +56,19 @@ class SongQueue extends React.Component {
         <Grid container direction="row" style={{alignItems: "center", justifyContent: "center"}}>
         <Box width={"calc(100% - 80px)"}>
         <Autocomplete
-  options={this.state.songOptions}
-  getOptionLabel={(option) => {return option.title + " " + option.primaryArtist}}
-  fullWidth
-  value={this.state.song}
-  onChange={this.handleChange}
-  renderInput={(params) => <TextField {...params} label="Add Song to Queue" variant="outlined" size="small" />}
-/>
+            options={this.state.songOptions}
+            getOptionLabel={(option) => {return option.title + " " + option.primaryArtist}}
+            fullWidth
+            value={this.state.song}
+            onChange={this.handleChange}
+            renderInput={(params) => <TextField {...params} label="Add Song to Queue" variant="outlined" size="small" />}
+            onKeyPress={(event) => {
+                if(event.charCode===13) {
+                    this.setState({lastMessage: new Date()})
+                    this.handleSubmit(event)
+                }
+            }}
+        />
         </Box>
         <Box width="80px" height={1} >
         <Button
