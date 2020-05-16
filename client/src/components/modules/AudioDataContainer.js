@@ -14,7 +14,7 @@ class AudioDataContainer extends React.Component {
 
   initializeAudioAnalyser = () => {
     const audioFile = this.props.audio;
-    const audioContext = new AudioContext();
+    const audioContext = window.AudioContext ? new AudioContext() : new webkitAudioContext();
     const source = audioContext.createMediaElementSource(audioFile);
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 64
