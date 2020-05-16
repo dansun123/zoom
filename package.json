@@ -34,6 +34,7 @@
     "mongoose": "^5.7.7",
     "nodemon": "^1.19.4",
     "react": "^16.13.1",
+    "react-audio-spectrum": "^0.1.0",
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.7.0",
     "react-google-login": "^5.0.7",

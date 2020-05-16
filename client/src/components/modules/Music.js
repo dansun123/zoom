@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import Button from "@material-ui/core/Button";
-
+import AudioDataContainer from "./AudioDataContainer"
 class Music extends React.Component {
     constructor(props) {
         super(props);
@@ -28,12 +28,13 @@ class Music extends React.Component {
     }
   
     render() {
-      //console.log("Song URL: " + this.props.url)
       return (
         <>
+          <div>pre</div>
+          <AudioDataContainer audio = {this.state.audio} />
+          <div>post</div>
           <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>
-          {/*<a href = {this.props.url}>SONGURL</a>*/}
-
+          <a href = {this.props.url}>SONGURL</a> */}
         </>
       );
     }

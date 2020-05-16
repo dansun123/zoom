@@ -101,7 +101,16 @@ class Room extends Component {
         socket.on("startTimer", (data) => {
             if(this.state.roomID !== data.roomID) return;
 
-            this.setState({status: "timer", lyrics: [], currentWord: "", songURL: data.songURL, endTime: data.endTime, startTime: data.startTime, gameData: data.gameData, gameID: data.gameID})
+            this.setState({
+                status: "timer", 
+                lyrics: [], 
+                currentWord: "", 
+                songURL: data.songURL, 
+                endTime: data.endTime, 
+                startTime: data.startTime, 
+                gameData: data.gameData, 
+                gameID: data.gameID
+            })
             let counter = 0
             var interval = setInterval(() => {
                 let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
