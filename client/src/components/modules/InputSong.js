@@ -46,7 +46,6 @@ class InputSong extends React.Component {
                 songUrl: response.url,
                 embedContent: response.embedContent,
             })
-            // console.log("track.lyrics.get?apikey="+API_KEY+"&track_id="+response.track_id)
         })
     };
 
@@ -63,7 +62,6 @@ class InputSong extends React.Component {
             songUrl: this.state.songUrl,
             embedContent: this.state.embedContent
         }
-        console.log(this.state.embedContent)
         post("/api/songLink", body).then(() => {
             this.setState({ 
                 title: "", 
