@@ -42,7 +42,7 @@ class Music extends React.Component {
           <Box height={"130px"}></Box>
           {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100px"}}/>}
           {/* <div>post</div> */}
-          {/*<Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>*/}
+          <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>
           {/* <a href = {this.props.url}>SONGURL</a> */}
           </Grid>
         </>
