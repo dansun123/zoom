@@ -63,7 +63,6 @@ class InputSong extends React.Component {
             songUrl: this.state.songUrl,
             embedContent: this.state.embedContent
         }
-        console.log(this.state.embedContent)
         post("/api/songLink", body).then(() => {
             this.setState({ 
                 title: "", 
