@@ -32,7 +32,6 @@ export default function ScorePage(props) {
     if(Object.keys(props).includes("cutOff")) {
       if(place >= props.cutOff) return <></>
     }
-    //console.log(user)
     return <ListItem button dense>
     <Box width={"200px"}>
     <h3 style={{fontWeight: "900", color: nameColor}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h3>

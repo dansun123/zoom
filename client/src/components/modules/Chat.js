@@ -24,8 +24,6 @@ class Chat extends React.Component {
     post("api/newMessage", {message: this.state.messageText, roomID: this.props.roomID}).then(() => {
       this.setState({ messageText: ""})
     });
-    console.log('submitting message')
-
   };
   handleChange = event => {
     this.setState({ messageText: event.target.value });
@@ -45,7 +43,6 @@ class Chat extends React.Component {
       }
       return i;
     }
-    //console.log(this.props.messages)
     let height="220px"
     let crop = (str) => {
       if(str.length > 140) {

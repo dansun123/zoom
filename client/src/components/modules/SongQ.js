@@ -29,7 +29,6 @@ class SongQueue extends React.Component {
     }
 
     handleChange = (event, value) => {
-        console.log(value)
         this.setState({ song: value });
     };
 
@@ -37,7 +36,6 @@ class SongQueue extends React.Component {
         event.preventDefault();
         // this.sendMessage();
         if(this.state.song === null) return;
-        console.log(this.state.song)
         post("/api/newSongReq", {newSong: this.state.song, roomID: this.props.roomID}).then(() => {
             this.setState({ song: null})
         });

@@ -70,7 +70,6 @@ class Room extends Component {
         post("/api/joinRoom", {roomID: this.state.roomID}).then((data) => {
             this.setState({users: data.userList, queue: data.queue})
             this.setState({isLoading: false})
-            console.log(data.status)
             if((data.status === "inProgress") || (data.status === "timer")) {
                 this.setState({status: "waitingToFinish"})
             }
@@ -181,7 +180,6 @@ class Room extends Component {
 
         if(!this.state.users) {
             return <>
-            <button onClick = {()=>{console.log(this.state)}}>log room state</button>
             <NotFound/>
             </>
         }

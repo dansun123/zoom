@@ -46,7 +46,6 @@ class InputSong extends React.Component {
                 songUrl: response.url,
                 embedContent: response.embedContent,
             })
-            // console.log("track.lyrics.get?apikey="+API_KEY+"&track_id="+response.track_id)
         })
     };
 
