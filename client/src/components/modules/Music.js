@@ -21,6 +21,8 @@ class Music extends React.Component {
       this.state.audio.addEventListener('ended', () => this.setState({ play: false }));
       this.state.audio.volume = 0.1
       this.state.audio.play()
+
+      setTimeout(() => this.state.audio.pause(), 30000)
       
     }
   
@@ -33,18 +35,21 @@ class Music extends React.Component {
         this.state.play ? this.state.audio.play() : this.state.audio.pause();
       });
     }
-  
+    
     render() {
       return (
         <>
           <Grid container direction="column" style={{padding: "10px 10px 10px 10px"}}>
           {/* <div>pre</div> */}
+          
           <Box height={"130px"}></Box>
+          
           {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100px"}}/>}
           {/* <div>post</div> */}
-          {/*<Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>*/}
+          
           {/* <a href = {this.props.url}>SONGURL</a> */}
           </Grid>
+          {/*<Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>*/}
         </>
       );
     }

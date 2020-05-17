@@ -243,8 +243,10 @@ class Room extends Component {
             if(event.charCode === 32) {
                 let lyrics = this.state.lyrics
                 lyrics.push(this.state.currentWord)
-                this.setState({lyrics: lyrics, currentWord: ""})
-                post("/api/updateGameData", {gameID: this.state.gameID, lyrics: this.state.lyrics, roomID: this.state.roomID})
+                this.setState({lyrics: lyrics, currentWord: ""}, () => {
+                    post("/api/updateGameData", {gameID: this.state.gameID, lyrics: lyrics, roomID: this.state.roomID})
+                })
+                
               /*
               submitAnswer(this.state.theirAnswer)
               this.setState({

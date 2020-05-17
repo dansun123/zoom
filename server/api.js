@@ -7,9 +7,12 @@
 |
 */
 require("dotenv").config();
+var autocorrect = {}
+
 const API_KEY = process.env.API_KEY;
 const express = require("express");
 var request = require('request');
+const levenshteiner = require('levenshteiner');
 const utf8 = require('utf8');
 // import models so we can interact with the database
 const User = require("./models/user");
@@ -294,7 +297,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
             Song.findOne(parameter).then((song) => {
               const game = new Game({
                 songID: song._id,
-                answerKey: song.answerKey,
+                answerKey: song.answerKey.replace(/(\r\n|\n|\r)/gm," ").replace(/(~|`|!|@|#|$|%|^|&|\*|\(|\)|{|}|\[|\]|;|:|\"|'|<|,|\.|>|\?|\/|\\|\||-|_|\+|=)/g,"").toLowerCase(),
                 endTime: endTime,
                 gameData: gameData,
                 roomID: req.body.roomID,
@@ -304,16 +307,16 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                 // API Get
                     Room.findOne({roomID: req.body.roomID}).then((room) => {
                       let arr = room.queue
-                      console.log(song._id)
+                     // console.log(song._id)
                       
                       arr = arr.filter((song2) => {return song2.songID !== song._id.toString()})
-                      console.log(arr)
+                     // console.log(arr)
                       room.queue = arr
                       room.save()
                     })
       
                     socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: song.songUrl, endTime: endTime, startTime: startTime, gameData: gameData})
-      
+                    autocorrect[game._id.toString()] = require('autocorrect')({words: game.answerKey})
                     setTimeout(() => {
                       Game.findById(game._id).then((newGame) => {
                         newGame.status = "inProgress"
@@ -330,7 +333,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                         newGame.status = "finished"
                         let finishedGameData = newGame.gameData
                         let lyrics = newGame.answerKey
-                        lyrics = lyrics.replace("\n", " ").split(" ")
+                        lyrics = lyrics.split(" ")
                         finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics})
                         newGame.save().then(()=> {
                           socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
@@ -398,7 +401,7 @@ var stringSimilarity = require('string-similarity');
 let similarity = (lyrics, answerKey) => {
   //console.log(lyrics)
   //console.log(answerKey)
-  return Math.round(stringSimilarity.compareTwoStrings(lyrics.join(' '), answerKey.replace('\n', ' '))*100);
+  return Math.round(stringSimilarity.compareTwoStrings(lyrics.join(' '), answerKey)*100);
 }
 
 router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
@@ -406,13 +409,36 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
  
  
   Game.findById(req.body.gameID).then((game) => {
-
-    let newScore = similarity(req.body.lyrics, game.answerKey) // better score calculationn D:
-    socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: req.body.lyrics, roomID: req.body.roomID})
+    let answerKey = game.answerKey.split(" ")
+    //console.log(answerKey)
+    let newLyrics = req.body.lyrics 
+    for(var i=0; i<newLyrics.length; i++) {
+      newLyrics[i] = newLyrics[i].replace(/\s+/g,'')
+      let result = levenshteiner.levenshteinOnArray(newLyrics[i], answerKey)
+      let correctedword = result.value
+      let similarity = stringSimilarity.compareTwoStrings(newLyrics[i], correctedword)
+      //console.log(correctedword + " " + newLyrics[i] + " " + similarity + " " + result.distance )
+      if((similarity > 0.35)) {
+        
+        if(!answerKey.includes(newLyrics[i])) {
+          //console.log("a")
+          if(Math.abs(newLyrics[i].length - correctedword.length) < 3) {
+            //console.log("b")
+            //console.log(newLyrics[i].charAt(0))
+            //console.log(correctedword.charAt(0))
+             if((newLyrics[i].charAt(0) === correctedword.charAt(0)) || ((result.distance <= 2)))
+                newLyrics[i] = correctedword
+          }
+        }
+      }
+    }
+    //newLyrics[newLyrics.length - 1] = autocorrect[game._id.toString()](newLyrics[newLyrics.length - 1])
+    let newScore = similarity(newLyrics, game.answerKey) // better score calculationn D:
+    socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: newLyrics, roomID: req.body.roomID})
 
     let arr = game.gameData
     arr = arr.filter((obj) => {return obj.userId !== req.user._id.toString()})
-    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: req.body.lyrics})
+    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: newLyrics})
     game.gameData = arr 
     game.markModified("gameData")
     game.save().then(() => {
