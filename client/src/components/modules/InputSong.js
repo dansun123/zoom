@@ -79,7 +79,7 @@ class InputSong extends React.Component {
     render() {
       return (
         <Box>
-            <button onClick = {()=>{console.log(this.state)}}>log InputSong state</button>
+            {/*<button onClick = {()=>{console.log(this.state)}}>log InputSong state</button>*/}
 
             <TextField
             label="Title"
@@ -117,7 +117,7 @@ class InputSong extends React.Component {
             </button>
             {this.state.embedContent ? <td dangerouslySetInnerHTML={{__html: this.state.embedContent}} />: null}
             {this.state.artUrl ? <img src = {this.state.artUrl} style={{width:"100px", height: "100px"}}/>: null}
-            {this.state.songUrl ? <Music url = {this.state.songUrl}/>: null}
+            {this.state.songUrl ? <Music url = {this.state.songUrl} pauseButton={true} />: null}
             <TextField
             label="AnswerKey"
             variant="outlined"

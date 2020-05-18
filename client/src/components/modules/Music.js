@@ -49,7 +49,7 @@ class Music extends React.Component {
           
           {/* <a href = {this.props.url}>SONGURL</a> */}
           </Grid>
-          {/*<Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button>*/}
+          {this.props.pauseButton ? <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> : ""}
         </>
       );
     }

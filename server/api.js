@@ -149,9 +149,11 @@ router.get("/songs", auth.ensureLoggedIn, (req, res) => {
     Song.find({}).then((songs) => {
       let listOfSongs = []
       songs.forEach((song) => {
-        listOfSongs.push({title: song.title, primaryArtist: song.primaryArtist, songID: song._id})
+        listOfSongs.push({title: song.title, primaryArtist: song.primaryArtist, songID: song._id, difficulty: song.answerKey.length})
         if(listOfSongs.length === songs.length) {
-          res.send(listOfSongs);
+          res.send(listOfSongs.sort((a, b) => {
+            return a.difficulty - b.difficulty
+          }));
         }
       })
     })
