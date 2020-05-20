@@ -5,7 +5,8 @@ const UserSchema = new mongoose.Schema({
   googleid: String,
   userName: String,
   roomID: String,
-  inactivityCount: {type: Number, default: 0}
+  inactivityCount: {type: Number, default: 0},
+  mode: {type: String, default: "Typing"}
 });
 
 // compile model from schema

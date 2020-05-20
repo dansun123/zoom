@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom' 
+import instruments from "../../public/instruments.js"
 import sound from "../images/RadioWaves.png";
 import silent from "../images/RadioNoWaves.png";
 import Chat from '../modules/Chat.js';
@@ -32,6 +33,7 @@ import { withRouter } from "react-router-dom";
 import { get, post } from "../../utilities";
 import { socket } from "../../client-socket.js";
 import ScorePage from "../modules/ScorePage";
+import ReactPiano from "../modules/ReactPiano"
 // import "../stylesheets/Audio.css";
 // import "../stylesheets/Audio.scss";
 
@@ -64,6 +66,7 @@ class Room extends Component {
             currentWord: "",
             redirect: false,
             refresh: false,
+            mode: "Typing"
         }
     }
     componentDidMount() {
@@ -83,7 +86,8 @@ class Room extends Component {
             if(newUsers && !containsObject(user, newUsers) && user.userId !== this.props.userId) {
                 newUsers.push(user)
                 this.setState({
-                    users: newUsers
+                    users: newUsers,
+
                 })
             }
         })
@@ -98,7 +102,7 @@ class Room extends Component {
             if(update.roomID !== this.state.roomID) return;
             let arr = this.state.gameData
             arr = arr.filter((obj) => {return obj.userId !== update.userId})
-            arr.push({userId: update.userId,  userName: update.userName, score: update.score, lyrics: update.lyrics})
+            arr.push({userId: update.userId,  userName: update.userName, score: update.score, lyrics: update.lyrics, mode: this.state.mode})
             this.setState({gameData: arr})
     
         })
@@ -185,7 +189,7 @@ class Room extends Component {
         }
 
         let blankGameData = this.state.users.map((user) => {
-            return {userId: user.userId, userName: user.userName, score: 0, lyrics: []}
+            return {userId: user.userId, userName: user.userName, score: 0, lyrics: [], mode: user.mode}
         })
         
         let body = <></>
@@ -224,7 +228,8 @@ class Room extends Component {
             <>
             
             <Timer endTime={this.state.endTime} />
-            <TextField
+
+            {this.state.mode === "Typing" ? <TextField
           id="filled-basic"
           label="Lyrics"
           variant="outlined"
@@ -242,7 +247,7 @@ class Room extends Component {
                 let lyrics = this.state.lyrics
                 lyrics.push(this.state.currentWord)
                 this.setState({lyrics: lyrics, currentWord: ""}, () => {
-                    post("/api/updateGameData", {gameID: this.state.gameID, lyrics: lyrics, roomID: this.state.roomID})
+                    post("/api/updateGameData", {gameID: this.state.gameID, lyrics: lyrics, roomID: this.state.roomID, mode: this.state.mode})
                 })
                 
               /*
@@ -254,7 +259,10 @@ class Room extends Component {
               */
             }
           }}
-        />
+        /> : 
+          <></>
+        }
+          <Box style={{display: "flex", justifyContent: "center", alignItems: "center"}}><Box width={600}><ReactPiano instrument={this.state.mode}  /></Box></Box>
        
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
             </>
@@ -293,11 +301,24 @@ class Room extends Component {
                      {body}
                 </Box>
                 <Box width={"400px"} >
-                
+                {this.state.status !== "inProgress" && this.state.status !== "timer" ? <Select
+          value={this.state.mode}
+          fullWidth
+          onChange={(event) => {
+              
+              this.setState({mode: event.target.value})
+                post("/api/setMode", {mode: event.target.value})
+                }}
+        >
+   
+          {["Typing"].concat(instruments).map((instrument) =>{return <MenuItem value={instrument}>{instrument}</MenuItem>})}
+                </Select>:<></>}                
+
                     {this.state.status === "inProgress" && window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
                 <Music url = {this.state.songURL} visual={true}></Music>
             </Box> : <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>}
             <Chat messages={this.props.chat} roomID={this.state.roomID} />
+            
                 </Box>
                 </Grid>
                 

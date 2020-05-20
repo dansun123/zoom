@@ -7,7 +7,8 @@ const GameSchema = new mongoose.Schema({
     userId: String,
     userName: String,
     score: Number,
-    lyrics: Array
+    lyrics: Array,
+    mode: String
   }],
   roomID: String,
   status: String, // inProgress, timer, finished. ,

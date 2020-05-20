@@ -103,7 +103,7 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
       User.findById(req.user._id).then((user) => {
         user.roomID = req.body.roomID;
         user.save().then(() => {
-          socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName, roomID: req.body.roomID})
+          socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName, roomID: req.body.roomID, mode: user.mode})
           let message = new Message({
             sender: {userId: req.user._id, userName: req.user.userName},
             roomID: req.body.roomID, 
@@ -118,7 +118,7 @@ router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
           userList = []
           User.find({roomID: user.roomID}).then((users) => {
             users.forEach((user2) => {
-              userList.push({userId: user2._id, userName: user2.userName})
+              userList.push({userId: user2._id, userName: user2.userName, mode: user.mode})
               if(userList.length === users.length) {
                 
                 Game.findOne({
@@ -216,7 +216,30 @@ router.post("/songLink", (req, res) => {
   res.send({});
 })
 
+router.post("/setMode", auth.ensureLoggedIn, (req, res) => {
+  User.findById(req.user._id).then((user) => {
+    user.mode = req.body.mode 
+    user.save().then(() => {
+      res.send({})
+    })
+  })
+})
 
+router.post("/playNote", auth.ensureLoggedIn, (req, res) => {
+  socket.getIo().emit("playNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument})
+ 
+  User.findById(req.user._id).then((user) => {
+    user.inactivityCount = 0
+    user.save()
+  })
+  res.send({})
+})
+
+router.post("/stopNote", auth.ensureLoggedIn, (req, res) => {
+  socket.getIo().emit("stopNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument})
+ 
+  res.send({})
+})
 
 
 
@@ -227,7 +250,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
     users.forEach((user) => {
       counter += 1
       if(user.roomID === req.body.roomID) {
-        gameData.push({userId: user._id, userName: user.userName, score: 0, lyrics: []})
+        gameData.push({userId: user._id, userName: user.userName, score: 0, lyrics: [], mode: user.mode})
       }
 
       if(counter === users.length) {
@@ -287,7 +310,7 @@ router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
                         let finishedGameData = newGame.gameData
                         let lyrics = newGame.answerKey
                         lyrics = lyrics.split(" ")
-                        finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics})
+                        finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics, mode: "Typing"})
                         newGame.save().then(()=> {
                           socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
                        
@@ -391,7 +414,7 @@ router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
 
     let arr = game.gameData
     arr = arr.filter((obj) => {return obj.userId !== req.user._id.toString()})
-    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: newLyrics})
+    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: newLyrics, mode: req.body.mode})
     game.gameData = arr 
     game.markModified("gameData")
     game.save().then(() => {
