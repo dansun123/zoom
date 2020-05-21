@@ -226,7 +226,7 @@ router.post("/setMode", auth.ensureLoggedIn, (req, res) => {
 })
 
 router.post("/playNote", auth.ensureLoggedIn, (req, res) => {
-  socket.getIo().emit("playNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument})
+  socket.getIo().emit("playNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument, gameID: req.body.gameID})
  
   User.findById(req.user._id).then((user) => {
     user.inactivityCount = 0
@@ -236,7 +236,7 @@ router.post("/playNote", auth.ensureLoggedIn, (req, res) => {
 })
 
 router.post("/stopNote", auth.ensureLoggedIn, (req, res) => {
-  socket.getIo().emit("stopNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument})
+  socket.getIo().emit("stopNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument, gameID: req.body.gameID})
  
   res.send({})
 })

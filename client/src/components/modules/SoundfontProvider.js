@@ -32,12 +32,18 @@ class SoundfontProvider extends React.Component {
   componentDidMount() {
     this.loadInstrument(this.props.instrumentName);
     socket.on("playNote",(data) => {
+        if(data.gameID !== this.props.gameID) return
         if(this.props.instrumentName === data.instrument) 
             this.playNote(data.midiNumber)
     })
     socket.on("stopNote", (data) => {
+        if(data.gameID !== this.props.gameID) return
         if(this.props.instrumentName === data.instrument) 
             this.stopNote(data.midiNumber)
+    })
+    socket.on("finished", (data) => {
+        if(data.gameID !== this.props.gameID) return
+        this.stopAllNotes()
     })
   }
 

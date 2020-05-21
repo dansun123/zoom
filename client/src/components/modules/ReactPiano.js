@@ -36,8 +36,9 @@ export default function ReactPiano(props) {
         instrumentName={instrument}
         audioContext={audioContext}
         hostname={soundfontHostname}
+        gameID={props.gameID}
         render={({ isLoading, playNote, stopNote, stopAllNotes }) => {
-            setTimeout(stopAllNotes, 30000)
+            
             return (
             
            (instrument===props.instrument)?
@@ -45,11 +46,11 @@ export default function ReactPiano(props) {
             noteRange={noteRange}
             width={600}
             playNote={(midiNumber) => {
-                post("/api/playNote", {midiNumber: midiNumber, instrument: instrument})
+                post("/api/playNote", {midiNumber: midiNumber, instrument: instrument, gameID: props.gameID})
               }
               }
             stopNote={(midiNumber) => {
-              post("/api/stopNote", {midiNumber: midiNumber, instrument: instrument})
+              post("/api/stopNote", {midiNumber: midiNumber, instrument: instrument, gameID: props.gameID})
             }}
             disabled={isLoading}
             keyboardShortcuts={keyboardShortcuts}

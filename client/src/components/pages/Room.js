@@ -262,7 +262,7 @@ class Room extends Component {
         /> : 
           <></>
         }
-          <Box style={{display: "flex", justifyContent: "center", alignItems: "center"}}><Box width={600}><ReactPiano instrument={this.state.mode}  /></Box></Box>
+          <Box style={{display: "flex", justifyContent: "center", alignItems: "center"}}><Box width={600}><ReactPiano instrument={this.state.mode} gameID={this.state.gameID} /></Box></Box>
        
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
             </>
