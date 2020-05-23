@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const RoomSchema = new mongoose.Schema({
-  roomID: String,
-  queue: [{
-    songID: String,
-    title: String,
-    primaryArtist: String
+  name: String,
+  data: [{
+    userID: String,
+    userName: String,
+    score: {type: Number, default: 0}
   }],
 });
 
