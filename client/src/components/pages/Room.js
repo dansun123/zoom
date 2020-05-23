@@ -54,6 +54,11 @@ class Room extends Component {
             
         }
     }
+
+    componentDidMount() {
+        
+    }
+
     render() {
         return (<h1>Room {this.props.name} {this.props.roomID}</h1>)
     }

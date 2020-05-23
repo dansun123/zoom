@@ -22,6 +22,16 @@ import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
 
+
+function makeid(length) {
+  var result           = '';
+  var characters       = '0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
 /**
  * Define the "App" component as a class.
  */
@@ -32,6 +42,7 @@ class App extends Component {
     this.state = {
       name: "",
       roomID: "",
+      didPlay: false,
     };
 
     // if (cookies.get('name')) {
@@ -58,6 +69,10 @@ class App extends Component {
   };
 
   createRoom = () => {
+    this.setState({didPlay: true})
+    if(this.state.name==="") {
+      this.setState({name: "Guest"+makeid(5)})
+    }
     post('api/createNewRoom', {}).then((res) => {
       this.setState({
         roomID: res.id
@@ -66,7 +81,13 @@ class App extends Component {
   }
 
   playNow = () => {
-    this.setState({roomID: 'main'});
+    this.setState({didPlay: true})
+    if(this.state.name==="") {
+      this.setState({name: "Guest"+makeid(5)})
+    }
+    if(this.state.roomID==="") {
+      this.setState({roomID: 'main'});
+    }
   };
 
   render() {
@@ -99,7 +120,7 @@ class App extends Component {
     return (
       <>
         <button onClick = {()=>{console.log(this.state)}}>log app state</button>
-        {this.state.roomID.length>1 ? gameContent : generalContent}
+        {this.state.didPlay ? gameContent : generalContent}
       </>
     );
   }

@@ -19,7 +19,7 @@ class Topbar extends Component {
   render() {
     return (
       <>
-        <div className = "topbar">
+        <div className = "topbar center">
           <div className = "title">PRTY</div>
         </div>
       </>
