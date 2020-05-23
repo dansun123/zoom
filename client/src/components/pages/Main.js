@@ -4,37 +4,38 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom'
 import "../../utilities.css";
 import "./Main.css";
 import { get, post } from "../../utilities";
+import TextField from "@material-ui/core/TextField";
 
 //contains public chat and a create-room button
 
 class Main extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+    };
     // Initialize Default State
-    this.state = {roomID: "Lobby", redirect: false};
   }
 
   componentDidMount() {
     // remember -- api calls go here!
-    post("/api/setRoomID", {roomID: "Lobby"})
   }
 
   render() {
-    let redirect = () => {
-      this.setState({redirect: true})
-    }
-    if(this.state.redirect) return <Redirect to="/main" />
     return (
       <>
-        <div className = 'main'>
-          <div className = 'center lefthalf'>
-            <button className = "button" onClick = {this.props.createRoom}>Create Room</button>
-            <button className = "button" onClick = {() => redirect()}>Play Now</button>
-          </div>
-          <div className = 'mainchat righthalf'>
-            <Chat messages={this.props.chat} roomID={this.state.roomID} />
-          </div>
-        </div>
+        <TextField
+          
+          label="Enter your name"
+          variant="outlined"
+          size="small"
+          value={this.props.name}
+          fullWidth
+          onChange={this.props.handleChange}
+    
+          />
+        <button onClick = {()=>{this.props.createRoom()}}>Create Room</button>
+        <button onClick = {()=>{this.props.playNow()}}>Play Now</button>
+        <h1>Put some logo thing here and add css</h1>
       </>
     );
   }
