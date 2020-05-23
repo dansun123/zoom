@@ -159,9 +159,6 @@ class Room extends Component {
                 this.setState({redirect: true})
             }
         })
-
-    componentDidMount() {
-        
     }
 
     render() {
