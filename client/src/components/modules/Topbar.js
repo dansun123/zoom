@@ -4,6 +4,7 @@ import GoogleLogin, { GoogleLogout } from "react-google-login";
 import "../../utilities.css";
 import "./Topbar.css";
 
+
 class Topbar extends Component {
   constructor(props) {
     super(props);
@@ -18,17 +19,12 @@ class Topbar extends Component {
   render() {
     return (
       <>
-        <div className = "topbar">
-          <div className = "title">DJ-Zoomer</div>
-          {this.props.userId ? <div className = "welcome">Welcome {this.props.name}</div>: <></>}
-          <div className = "login">
-          </div>
+        <div className = "topbar center">
+          <div className = "title">PRTY</div>
         </div>
       </>
     );
   }
 }
-// ATLAS_SRV = "mongodb+srv://prtyr:ZSsOoWnge7gxAYUi@cluster0-eks3r.mongodb.net/test?retryWrites=true&w=majority"
-
 
 export default Topbar;

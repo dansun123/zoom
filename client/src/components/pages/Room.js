@@ -160,9 +160,9 @@ class Room extends Component {
             }
         })
 
+    componentDidMount() {
+        
     }
-
-      
 
     render() {
         
@@ -319,4 +319,4 @@ class Room extends Component {
     }
 }
 
-export default withRouter(Room);
+export default Room;

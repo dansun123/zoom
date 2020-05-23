@@ -22,24 +22,16 @@ import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
 
-// import Cookies from 'universal-cookie';
-// const cookies = new Cookies()
-// handleChangeName = (event) => {
-  //   this.setState({name2: event.target.value});
-  //   event.preventDefault();
-  // }
 
-  // handleSubmit = (event) => {
-  //   alert('A name was submitted: ' + this.state.name2);
-  //   let query = {newName: this.state.name2, oldName: this.state.name}
-  //   post('api/newUser', query).then((res) => {
-  //       this.setState({name: res.newName});
-  //       cookies.set('name', res.newName, {path:'/'});
-  //   })
-  //   event.preventDefault();
-  // }
-
-
+function makeid(length) {
+  var result           = '';
+  var characters       = '0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
 /**
  * Define the "App" component as a class.
  */
@@ -48,11 +40,9 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userId: undefined,
-      name2: undefined,
-      name: undefined,
-      chat: [],
-      isLoading: true,
+      name: "",
+      roomID: "",
+      didPlay: false,
     };
 
     // if (cookies.get('name')) {
@@ -62,14 +52,9 @@ class App extends Component {
   }
 
   componentDidMount() {
-    get("/api/whoami").then((user) => {
-      if (user._id) {
-        // they are registed in the database, and currently logged in.
-        this.setState({ userId: user._id, name:user.name});
-      }
-      this.setState({isLoading: false})
-    });
-
+    this.setState({
+      roomID: window.location.href.substring(window.location.href.indexOf("/",9)+1)
+    })
     socket.on('newMessage', (message) => {
       let newChat  = this.state.chat;
       newChat.push(message)
@@ -79,102 +64,63 @@ class App extends Component {
     })
   }
 
-  handleLogin = (res) => {
-    console.log(`Logged in as ${res.profileObj.name}`);
-    const userToken = res.tokenObj.id_token;
-    post("/api/login", { token: userToken }).then((user) => {
-      this.setState({ userId: user._id , name: user.name});
-      post("/api/initsocket", { socketid: socket.id });
-    });
-  };
-
-  handleLogout = () => {
-    this.setState({ userId: undefined });
-    post("/api/logout");
+  handleChange = event => {
+    this.setState({ name: event.target.value });
   };
 
   createRoom = () => {
+    this.setState({didPlay: true})
+    if(this.state.name==="") {
+      this.setState({name: "Guest"+makeid(5)})
+    }
     post('api/createNewRoom', {}).then((res) => {
-      window.location.href = window.location.href+res.id;
+      this.setState({
+        roomID: res.id
+      })
     })
   }
 
-  updateState = (state) => {
-    this.setState(state);
+  playNow = () => {
+    this.setState({didPlay: true})
+    if(this.state.name==="") {
+      this.setState({name: "Guest"+makeid(5)})
+    }
+    if(this.state.roomID==="") {
+      this.setState({roomID: 'main'});
+    }
   };
 
   render() {
-    let privateContent =  
+    let gameContent =  
       (
       <>
-        <Topbar
-          userId={this.state.userId}
-          name = {this.state.name}
-          handleLogin={this.handleLogin}
-          handleLogout={this.handleLogout}
-        />
         {this.state.isLoading ? <h1>Loading...</h1> :
-        <Router>
-          <div>
-            <Switch>
-              <Main
-                exact path="/"
-                handleLogin={this.handleLogin}
-                handleLogout={this.handleLogout}
-                userId={this.state.userId}
-                createRoom = {this.createRoom}
-                chat = {this.state.chat}
-              />
-              <Room 
-                path = "/:id" 
-                chat = {this.state.chat}
-                userId={this.state.userId}
-                updateState={this.updateState}
-              /> />
-              <NotFound default />
-            </Switch>
-          </div>  
-        </Router>
+        <Room
+          name = {this.state.name}
+          roomID = {this.state.roomID}
+        />
   }
       </>
     );
 
-    let publicContent = (
+    let generalContent = (
       <>
-        <Router>
-          <div>
-            <Switch>
-              <InputSong
-                exact path = "/input"
-              />
-              <div default>
-                <Topbar
-                    userId={this.state.userId}
-                    name = {this.state.name}
-                    handleLogin={this.handleLogin}
-                    handleLogout={this.handleLogout}
-                />
-                <div className = "mainpublic">
-                  <div className = "record">
-                    <img src = {Record}/>
-                  </div>
-                  <div className = "public">
-                    Memorize the lyrics to your favorite songs on the Billboard Top 500 hits
-                    and improve your typing speed while you're at it! Log in to play.
-                  </div>
-                </div>
-              </div>
-            </Switch>
-          </div>  
-        </Router>
+        <Topbar
+        />
+        <Main
+          name = {this.state.name}
+          handleChange = {this.handleChange}
+          createRoom = {this.createRoom}
+          playNow = {this.playNow}
+        />
       </>
     )
     
 
     return (
       <>
-        {/* <button onClick = {()=>{console.log(this.state)}}>log app state</button> */}
-        {this.state.userId ? privateContent: publicContent}
+        <button onClick = {()=>{console.log(this.state)}}>log app state</button>
+        {this.state.didPlay ? gameContent : generalContent}
       </>
     );
   }
