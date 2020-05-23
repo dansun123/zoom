@@ -51,92 +51,70 @@ class Room extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            roomID: String(this.props.computedMatch.params.id),
-            gameID: "",
-            users: undefined,
+            roomName: String(this.props.computedMatch.params.id),
             status: "waitingToFinish",
             isLoading: true,
             endTime: new Date(),
             startTime: new Date(),
             songURL: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a",
             timeToStart: 3,
-            gameData: [],
-            queue: [],
-            lyrics: [],
-            currentWord: "",
+            roomData: [],
             redirect: false,
             refresh: false,
-            mode: "Typing"
+        
         }
     }
     componentDidMount() {
-        post("/api/joinRoom", {roomID: this.state.roomID}).then((data) => {
-            this.setState({users: data.userList, queue: data.queue})
-            this.setState({isLoading: false})
-            if((data.status === "inProgress") || (data.status === "timer")) {
-                this.setState({status: "waitingToFinish"})
-            }
+        post("/api/joinRoom", {roomName: this.state.roomName}).then((data) => {
+            if(data.exists)
+                 this.setState({roomID: data.roomID, roomData: data.roomData, status: data.status, isLoading: false})
             else {
-                this.setState({status: "waitingToStart"})
+                this.setState({isLoading: true, status: "doesNotExist"})
             }
         }) 
         socket.on("someoneJoinedRoom", (user) => {
-            if(user.roomID !== this.state.roomID) return;
-            let newUsers  = this.state.users;
-            if(newUsers && !containsObject(user, newUsers) && user.userId !== this.props.userId) {
-                newUsers.push(user)
-                this.setState({
-                    users: newUsers,
-
-                })
-            }
+            if(user.roomName !== this.state.roomName) return;
+            let data = this.state.roomData
+            data.push({userID: user.userID, userName: user.userName, score: 0})
+            this.setState({roomData: data})
         })
 
-        socket.on("newQ", (q) => {
-            if(q.roomID == this.state.roomID) {
-                this.setState({queue: q.q})
-            }
-        })
-
-        socket.on("updateGameScore", (update) => {
-            if(update.roomID !== this.state.roomID) return;
-            let arr = this.state.gameData
-            arr = arr.filter((obj) => {return obj.userId !== update.userId})
-            arr.push({userId: update.userId,  userName: update.userName, score: update.score, lyrics: update.lyrics, mode: this.state.mode})
-            this.setState({gameData: arr})
-    
+        socket.on("updateRoomData", (update) => {
+            if(update.roomName !== this.state.roomName) return;
+            let arr = this.state.roomData
+            arr = arr.filter((obj) => {return obj.userID !== update.entry.userID})
+            arr.push(update.entry)
+            this.setState({roomData: arr})
         })
 
         socket.on("startTimer", (data) => {
-            if(this.state.roomID !== data.roomID) return;
+            if(this.state.roomName !== data.roomName) return;
 
             this.setState({
                 status: "timer", 
-                lyrics: [], 
-                currentWord: "", 
-                songURL: data.songURL, 
                 endTime: data.endTime, 
                 startTime: data.startTime, 
-                gameData: data.gameData, 
-                gameID: data.gameID
+                songID: data.songID,
+                songURL: data.url,
+                roundNum: data.roundNum
             })
+
             let counter = 0
             var interval = setInterval(() => {
                 let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
                 this.setState({timeToStart: timeToStart})
                 counter += 1
-                if(counter === 4) {
+                if(counter === 6) {
                     clearInterval(interval)
                 }
             
             }, 1000)
 
-            let newQueue = this.state.queue.filter((song) => {return song.songID !== data.songID})
-            this.setState({queue: newQueue})
         })
 
-        socket.on("inProgress", (data) => {
-            if(this.state.roomID !== data.roomID) return;
+        socket.on("startGame", (data) => {
+            if(this.state.roomName !== data.roomName) return;
+            this.setState({roundNum: data.roundNum})
             if(this.state.status === "timer") {
                 this.setState({status: "inProgress"})
                 
@@ -144,12 +122,30 @@ class Room extends Component {
 
         })
 
-        socket.on("finished", (data) => {
-            if(this.state.roomID !== data.roomID) return;
-            this.setState({status: "finished", timeToStart: 3, gameData: data.gameData})
+        socket.on("finishGame", (data) => {
+            if(this.state.roomName !== data.roomName) return;
             
                
+            this.setState({
+                status: "gameFinished", 
+                endTime: data.endTime, 
+                startTime: data.startTime, 
+                songID: data.songID,
+                songURL: data.url,
+                timeToStart: 5
+                
+            })
+
+            let counter = 0
+            var interval = setInterval(() => {
+                let timeToStart = Math.floor(((new Date(data.startTime).getTime() - (new Date()).getTime())/1000.0)+1.0)
+                this.setState({timeToStart: timeToStart})
+                counter += 1
+                if(counter === 6) {
+                    clearInterval(interval)
+                }
             
+            }, 1000)
         })
 
         socket.on("disconnect", () => {
@@ -179,12 +175,6 @@ class Room extends Component {
         if(this.state.isLoading) {
             return <>
             <h1>Loading...</h1>
-            </>
-        }
-
-        if(!this.state.users) {
-            return <>
-            <NotFound/>
             </>
         }
 

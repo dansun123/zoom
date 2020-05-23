@@ -67,7 +67,7 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
     if(room) {
       res.send({created: false})
     } else {
-      const newRoom = new Room({name: req.body.roomName, data: []});
+      const newRoom = new Room({name: req.body.roomName, data: [], status: "waiting"});
       res.send({created: true})
     }
   })
@@ -77,9 +77,9 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
 router.post("/joinRoom", (req, res) => {
-  Room.findOne({name : req.body.name}).then((room) => {
+  Room.findOne({name : req.body.roomName}).then((room) => {
     if(room) {
-      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.user.userName, roomName: req.body.roomID})
+      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomName: req.body.roomName})
       let message = new Message({
         sender: {userID: req.body.userID, userName: req.body.userName},
         roomID: req.body.roomID, 
@@ -92,8 +92,11 @@ router.post("/joinRoom", (req, res) => {
       data.push({userID: req.body.userID, userName: req.body.userName, score: 0})
       room.data = data
       room.save().then(() => {
-        res.send(data)
+        res.send({exists: true, roomData: data, status: room.status, roomID: room._id})
       })
+    }
+    else {
+      res.send({exists: false})
     }
   })
 });
@@ -127,15 +130,37 @@ router.post("/startGame", (req, res) => {
           for(roundNum = 0; roundNum < rounds; roundNum += 1) {
             if(roundNum === 0) {
               let curSong = songs[roundNum]
-              socket.getIo().emit("startTimer", {songID: curSong._id, url: curSong.url, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime)})              
+              socket.getIo().emit("startTimer", {roomName: req.body.roomName, songID: curSong._id, url: curSong.songUrl, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime), roundNum: 1})              
+              Room.find({name: req.body.roomName}).then((room) => {
+                room.status = "1inProgress"
+                room.save()
+              })
             }
-            setTimeout(() => {socket.getIo().emit("startGame", {})}, times[roundNum].startTime)              
+            setTimeout(() => {
+              socket.getIo().emit("startGame", {roomName: req.body.roomName, roundNum: roundNum + 1})
+              Room.find({name: req.body.roomName}).then((room) => {
+                room.status = (roundNum + 1) + "inProgress"
+                room.save()
+              })
+            }, times[roundNum].startTime)              
             if(roundNum !== rounds - 1) {
               let curSong = songs[roundNum+1]
-              setTimeout(() => {socket.getIo().emit("finishGame", {songID: curSong._id, url: curSong.url})}, times[roundNum].endTime) 
+              setTimeout(() => {
+                socket.getIo().emit("finishGame", {roomName: req.body.roomName, songID: curSong._id, url: curSong.songUrl,  startTime: fromNow(times[roundNum+1].startTime), endTime: fromNow(times[roundNum+1].endTime)})
+                Room.find({name: req.body.roomName}).then((room) => {
+                  room.status = "gameFinished"
+                  room.save()
+                })
+              }, times[roundNum].endTime) 
             }
             else {
-              setTimeout(() => {socket.getIo().emit("results", {})}, times[roundNum].endTime) 
+              setTimeout(() => {
+                socket.getIo().emit("results", {roomName: req.body.roomName})
+                Room.find({name: req.body.roomName}).then((room) => {
+                  room.status = "roundFinished"
+                  room.save()
+                })
+              }, times[roundNum].endTime) 
             }
       
           }
@@ -179,7 +204,7 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
         room.data = data 
         room.save()
       })
-      socket.getIo().emit("updateRoomData", newEntry)
+      socket.getIo().emit("updateRoomData", {roomName: req.body.roomName, entry: newEntry})
     }
   }
 
