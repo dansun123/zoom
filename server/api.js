@@ -56,431 +56,148 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 
-router.post("/newUser", (req,res) => {
-  let newName = req.body.newName;
-  User.find({name: newName})
-  let user = new User({
-    name: newName,
-    roomID: undefined,
-  });
-  user.save();
-  res.send({newName: newName});
-});
-
 
 
 
 router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 
-  let min = 10000
-  let max = min*10-1
-  let roomID = String(Math.floor(Math.random() * (max-min) + min))
-  // what if its already taken :o
-
-  Room.findOne({roomID: roomID}, (room) => {
+  Room.findOne({name: req.body.roomName}, (room) => {
     if(room) {
-      User.findById(req.user._id).then((user) => {
-        user.roomID = roomID;
-        user.save().then(() => {
-          res.send({id: roomID})
-        })
-      })
+      res.send({created: false})
     } else {
-      const newRoom = new Room({
-        roomID: roomID,
-      })
-      newRoom.save().then(() => {
-        res.send({id: roomID})
-      });
+      const newRoom = new Room({name: req.body.roomName, data: []});
+      res.send({created: true})
     }
   })
+  // After this you have to join it! Either way you will be able to :) 
+
 });
 
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
-router.post("/joinRoom", auth.ensureLoggedIn, (req, res) => {
-  Room.findOne({roomID : req.body.roomID}).then((room) => {
+router.post("/joinRoom", (req, res) => {
+  Room.findOne({name : req.body.name}).then((room) => {
     if(room) {
-      User.findById(req.user._id).then((user) => {
-        user.roomID = req.body.roomID;
-        user.save().then(() => {
-          socket.getIo().emit("someoneJoinedRoom", {userId: req.user._id, userName: req.user.userName, roomID: req.body.roomID, mode: user.mode})
-          let message = new Message({
-            sender: {userId: req.user._id, userName: req.user.userName},
-            roomID: req.body.roomID, 
-            message: req.user.userName + " joined the Room",
-            systemMessage: true
-          })
-          socket.getIo().emit("newMessage", message)
-        
-
-
-          
-          userList = []
-          User.find({roomID: user.roomID}).then((users) => {
-            users.forEach((user2) => {
-              userList.push({userId: user2._id, userName: user2.userName, mode: user.mode})
-              if(userList.length === users.length) {
-                
-                Game.findOne({
-                  $or: [
-                    {roomID: req.body.roomID, status: "inProgress"},
-                    {roomID: req.body.roomID, status: "timer"}
-                       ]
-                }).then((game) => {
-                  if(game) {
-                    res.send({userList: userList, status: game.status, queue: room.queue});
-                  }
-                  else {
-                    res.send({userList: userList, status: "waiting", queue: room.queue});
-                  }
-                })
-              }
-            })
-          })
-        })
+      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.user.userName, roomName: req.body.roomID})
+      let message = new Message({
+        sender: {userID: req.body.userID, userName: req.body.userName},
+        roomID: req.body.roomID, 
+        message: req.body.userName + " joined the Room",
+        systemMessage: true
       })
-    } else {
-      res.send(false)
-    }
-  })
-});
-
-router.get("/songs", auth.ensureLoggedIn, (req, res) => {
-    Song.find({}).then((songs) => {
-      let listOfSongs = []
-      songs.forEach((song) => {
-        listOfSongs.push({title: song.title, primaryArtist: song.primaryArtist, songID: song._id, difficulty: song.answerKey.length})
-        if(listOfSongs.length === songs.length) {
-          res.send(listOfSongs.sort((a, b) => {
-            return a.difficulty - b.difficulty
-          }));
-        }
-      })
-    })
-})
-
-router.get("/songLyrics", (req, res) => {
-  console.log(req.query.title)
-  request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title)+'&entity=song&limit=1', (error, response, body) => {
-    if (!error && response.statusCode == 200) {
-      let songURL = JSON.parse(body).results[0].previewUrl
-      genius.search(req.query.title).then(function(response1) {
-        genius.song(response1.hits[0].result.id).then(function(response) {
-          console.log('song', response.song); 
-          let title = String(response.song.title);
-          let primaryArtist =  response.song.primary_artist.name;
-          // let featuredArtists = "Daniel";
-          let artUrl = response.song.song_art_image_url;
-          let id = String(response.song.id);
-          let embedContent = response.song.embed_content;
-          const options = {
-            apiKey: process.env.GENIUS_CLIENT_ACCESS_TOKEN, // genius developer access token
-            title: utf8.encode(title),
-            artist: utf8.encode(primaryArtist),
-            optimizeQuery: true
-          }
-          getLyrics(options).then(answer => {
-            console.log("lyrics")
-            console.log(answer)
-            res.send({
-              title: title,
-              primaryArtist: primaryArtist,
-              // featuredArtists: featuredArtists,
-              artUrl: artUrl,
-              id: id,
-              answerKey: (answer ? answer.substring(0, Math.min(answer.length, 1500)) : null),
-              url: songURL,
-              embedContent: embedContent
-            })
-          })
-        });
-      });
-    }
-  })
-})
-
-
-router.post("/songLink", (req, res) => {
-  console.log(req.body.embedContent)
-  const song = new Song({
-    answerKey: req.body.answerKey,
-    title: req.body.title,
-    primaryArtist: req.body.primaryArtist,
-    // featuredArtists: req.body.featuredArtists,
-    artUrl: req.body.artUrl,
-    geniusID: req.body.geniusID,
-    songUrl: req.body.songUrl,
-    embedContent: req.body.embedContent,
-  })
-  song.save();
-  res.send({});
-})
-
-router.post("/setMode", auth.ensureLoggedIn, (req, res) => {
-  User.findById(req.user._id).then((user) => {
-    user.mode = req.body.mode 
-    user.save().then(() => {
-      res.send({})
-    })
-  })
-})
-
-router.post("/playNote", auth.ensureLoggedIn, (req, res) => {
-  socket.getIo().emit("playNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument, gameID: req.body.gameID})
- 
-  User.findById(req.user._id).then((user) => {
-    user.inactivityCount = 0
-    user.save()
-  })
-  res.send({})
-})
-
-router.post("/stopNote", auth.ensureLoggedIn, (req, res) => {
-  socket.getIo().emit("stopNote", {midiNumber: req.body.midiNumber, instrument: req.body.instrument, gameID: req.body.gameID})
- 
-  res.send({})
-})
-
-
-
-router.post("/startGame", auth.ensureLoggedIn, (req, res) => {
-  let gameData = []
-  User.find({}).then((users) => {
-    let counter = 0
-    users.forEach((user) => {
-      counter += 1
-      if(user.roomID === req.body.roomID) {
-        gameData.push({userId: user._id, userName: user.userName, score: 0, lyrics: [], mode: user.mode})
-      }
-
-      if(counter === users.length) {
-
-        // create game
-        let endTime = new Date((new Date()).getTime() + 33*1000) 
-        let startTime = new Date((new Date()).getTime() + 3*1000) 
-
-        
-
-        // get random Song
-        Song.aggregate(
-          [ { $sample: { size: 1 } } ]
-       ).then((songs) => {
-          songs.forEach(randomSong => {
-
-            let parameter = {_id: randomSong._id}
-            if(req.body.song) parameter = {_id: req.body.song.songID}
-
-            Song.findOne(parameter).then((song) => {
-              const game = new Game({
-                songID: song._id,
-                answerKey: song.answerKey.replace(/(\r\n|\n|\r)/gm," ").replace(/(~|`|!|@|#|$|%|^|&|\*|\(|\)|{|}|\[|\]|;|:|\"|'|<|,|\.|>|\?|\/|\\|\||-|_|\+|=)/g,"").toLowerCase(),
-                endTime: endTime,
-                gameData: gameData,
-                roomID: req.body.roomID,
-                status: "timer" // inProgress, timer, finished. 
-              });
-              game.save().then(() => {
-                // API Get
-                    Room.findOne({roomID: req.body.roomID}).then((room) => {
-                      let arr = room.queue
-                     // console.log(song._id)
-                      
-                      arr = arr.filter((song2) => {return song2.songID !== song._id.toString()})
-                     // console.log(arr)
-                      room.queue = arr
-                      room.save()
-                    })
+      socket.getIo().emit("newMessage", message)
       
-                    socket.getIo().emit("startTimer", {roomID: req.body.roomID, gameID: game._id, songID: song._id, songURL: song.songUrl, endTime: endTime, startTime: startTime, gameData: gameData})
-                    autocorrect[game._id.toString()] = require('autocorrect')({words: game.answerKey})
-                    setTimeout(() => {
-                      Game.findById(game._id).then((newGame) => {
-                        newGame.status = "inProgress"
-             
-                        newGame.save().then(()=> {
-                          socket.getIo().emit("inProgress", {roomID: req.body.roomID, gameID: game._id})
-                        })
-                      })
-                     
-                      
-                    }, 3000)
-                    setTimeout(() => {
-                      Game.findById(game._id).then((newGame) => {
-                        newGame.status = "finished"
-                        let finishedGameData = newGame.gameData
-                        let lyrics = newGame.answerKey
-                        lyrics = lyrics.split(" ")
-                        finishedGameData.push({userId: "0", userName: "Lyrics", score: 100, lyrics: lyrics, mode: "Typing"})
-                        newGame.save().then(()=> {
-                          socket.getIo().emit("finished", {roomID: req.body.roomID, gameID: game._id, gameData: finishedGameData})
-                       
-                          finishedGameData.forEach((obj) => {
-                            if(obj.userId === "0") return;
-                            User.findById(obj.userId).then((activeuser) => {
-                              let curcount = activeuser.inactivityCount;
-                              if(obj.lyrics.length > 0) 
-                                activeuser.inactivityCount = 0
-                              else {
-                                if(curcount >= 2) {
-                                  socket.getIo().emit("inactive", {userId: obj.userId})
-                                  activeuser.roomID = "Lobby"
-                                  let message = new Message({
-                                    sender: {userId: obj.userId, userName: activeuser.userName},
-                                    roomID: req.body.roomID, 
-                                    message: activeuser.userName + " left the Room",
-                                    systemMessage: true
-                                  })
-                                  socket.getIo().emit("newMessage", message)
-                                  activeuser.inactivityCount = 0
-                                } 
-                                else {
-                                  activeuser.inactivityCount = curcount + 1
-                                }
-                              }
-                              activeuser.save()
-    
-    
-                            })
-                          })
-                       
-                        })
-    
-    
-                      })
-                    }, 33000)
+      let data = room.data 
+      data.push({userID: req.body.userID, userName: req.body.userName, score: 0})
+      room.data = data
+      room.save().then(() => {
+        res.send(data)
+      })
+    }
+  })
+});
+
+
+
+
+router.post("/startGame", (req, res) => {
+  var rounds = 6
+  var roundNum = 0;
+  var songs = []
+  Song.aggregate(
+    [ { $sample: { size: rounds } } ]
+  ).then((ssongs) => {
+    ssongs.forEach((song) => {
+      songs.push(song)
+      if(songs.length === ssongs.length) {
+
+          // start the process!!!
+          times = []
+          let fromNow = (num) => {
+            return new Date((new Date()).getTime() + num)
+          }
+          for(roundNum = 0; roundNum < rounds; roundNum += 1) {
+            let mostRecentTime = 0
+            let mostRecentRoundTimes = {startTime: mostRecentTime + 5000, endTime: mostRecentTime + 35000}
+            times.push(mostRecentRoundTimes)
+            mostRecentTime = mostRecentRoundTimes.endTime
+          }
           
-                 
-              })
-            })
+          for(roundNum = 0; roundNum < rounds; roundNum += 1) {
+            if(roundNum === 0) {
+              let curSong = songs[roundNum]
+              socket.getIo().emit("startTimer", {songID: curSong._id, url: curSong.url, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime)})              
+            }
+            setTimeout(() => {socket.getIo().emit("startGame", {})}, times[roundNum].startTime)              
+            if(roundNum !== rounds - 1) {
+              let curSong = songs[roundNum+1]
+              setTimeout(() => {socket.getIo().emit("finishGame", {songID: curSong._id, url: curSong.url})}, times[roundNum].endTime) 
+            }
+            else {
+              setTimeout(() => {socket.getIo().emit("results", {})}, times[roundNum].endTime) 
+            }
+      
+          }
 
 
 
 
 
-
-          })
-       })
-        
-
-        
       }
     })
   })
-  
-  
 
-  res.send({});
 });
+
+  
+  
 
 var stringSimilarity = require('string-similarity');
 
-let similarity = (lyrics, answerKey) => {
-  //console.log(lyrics)
-  //console.log(answerKey)
-  return Math.round(stringSimilarity.compareTwoStrings(lyrics.join(' '), answerKey)*100);
+let similarity = (a, b) => {
+  return stringSimilarity.compareTwoStrings(a.toLowerCase(),b.toLowerCase());
 }
 
-router.post("/updateGameData", auth.ensureLoggedIn, (req, res) => {
-  // score calculation
- 
- 
-  Game.findById(req.body.gameID).then((game) => {
-    let answerKey = game.answerKey.split(" ")
-    //console.log(answerKey)
-    let newLyrics = req.body.lyrics 
-    for(var i=0; i<newLyrics.length; i++) {
-      newLyrics[i] = newLyrics[i].replace(/\s+/g,'')
-      let result = levenshteiner.levenshteinOnArray(newLyrics[i], answerKey)
-      let correctedword = result.value
-      let similarity = stringSimilarity.compareTwoStrings(newLyrics[i], correctedword)
-      //console.log(correctedword + " " + newLyrics[i] + " " + similarity + " " + result.distance )
-      if((similarity > 0.35)) {
-        
-        if(!answerKey.includes(newLyrics[i])) {
-          //console.log("a")
-          if(Math.abs(newLyrics[i].length - correctedword.length) < 3) {
-            //console.log("b")
-            //console.log(newLyrics[i].charAt(0))
-            //console.log(correctedword.charAt(0))
-             if((newLyrics[i].charAt(0) === correctedword.charAt(0)) || ((result.distance <= 2)))
-                newLyrics[i] = correctedword
-          }
-        }
-      }
-    }
-    //newLyrics[newLyrics.length - 1] = autocorrect[game._id.toString()](newLyrics[newLyrics.length - 1])
-    let newScore = similarity(newLyrics, game.answerKey) // better score calculationn D:
-    socket.getIo().emit("updateGameScore", {userId: req.user._id, userName: req.user.userName, score: newScore, lyrics: newLyrics, roomID: req.body.roomID})
-
-    let arr = game.gameData
-    arr = arr.filter((obj) => {return obj.userId !== req.user._id.toString()})
-    arr.push({userId: req.user._id,  userName: req.user.userName, score: newScore, lyrics: newLyrics, mode: req.body.mode})
-    game.gameData = arr 
-    game.markModified("gameData")
-    game.save().then(() => {
-      res.send({});
-    })
-  })
-
-});
 
 
 router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
   let systemMessage = false
+  let messageText = req.body.message
   if(req.body.systemMessage) systemMessage = true
+  else {
+    if(req.body.inGame && similarity(messageText, req.body.title) > 0.7) {
+      systemMessage = true 
+      messageText = req.body.userName + " guessed the title!"
+      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + 1}
+      Room.find({name: req.body.roomName}).then((room) => {
+        let data = room.data 
+        data = data.filter((entry) => {
+          return entry.userID !== req.body.userID;
+        })
+        data.push(newEntry)
+        room.data = data 
+        room.save()
+      })
+      socket.getIo().emit("updateRoomData", newEntry)
+    }
+  }
+
+
+
   let message = new Message({
     sender: {userId: req.user._id, userName: req.user.userName},
     roomID: req.body.roomID, 
     message: req.body.message,
     systemMessage: systemMessage
   })
+
+
+
+
   socket.getIo().emit("newMessage", message)
-  User.findById(req.user._id).then((user) => {
-    user.inactivityCount = 0
-
-    user.save()
-  })
-
   res.send({});
 });
 
-router.post("/updateSongs", (req,res) => {
-  Song.find({}).then((songs) => {
-    songs.forEach((song) => {
-      request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist)+'&entity=song&limit=1', (error, response, body) => {
-      if (!error && response.statusCode == 200) {
-        
-        let songUrl = JSON.parse(body).results[0].previewUrl
-        song.songUrl = songUrl
-        song.save();
-      }
-    })
-    })
-  })
-  res.send({})
-})
 
-router.post("/newSongReq", auth.ensureLoggedIn, (req, res) => {
-  Room.findOne({roomID: req.body.roomID}).then((room) => {
-    let q = room.queue;
-    q.push(req.body.newSong);
-    room.queue = q;
-    room.save().then(() => {
-      socket.getIo().emit("newQ", {q:q, roomID: req.body.roomID})
-      res.send({});
-    });
-  })
-});
-
-
-router.post("/setRoomID", auth.ensureLoggedIn, (req, res) => {
-  User.findById(req.user._id).then((user) => {
-    user.roomID = req.body.roomID
-    user.save().then(() => {
-      res.send({})
-    })
-  })
-})
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
