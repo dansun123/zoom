@@ -4,8 +4,6 @@ import GoogleLogin, { GoogleLogout } from "react-google-login";
 import "../../utilities.css";
 import "./Topbar.css";
 
-const GOOGLE_CLIENT_ID = "928327247031-413d31f766bgvvse5q6u14u3h7io5309.apps.googleusercontent.com";
-
 class Topbar extends Component {
   constructor(props) {
     super(props);
@@ -24,26 +22,13 @@ class Topbar extends Component {
           <div className = "title">DJ-Zoomer</div>
           {this.props.userId ? <div className = "welcome">Welcome {this.props.name}</div>: <></>}
           <div className = "login">
-            {this.props.userId ? (
-              <GoogleLogout
-                clientId={GOOGLE_CLIENT_ID}
-                buttonText="Logout"
-                onLogoutSuccess={this.props.handleLogout}
-                onFailure={(err) => console.log(err)}
-              />
-            ) : (
-              <GoogleLogin
-                clientId={GOOGLE_CLIENT_ID}
-                buttonText="Login"
-                onSuccess={this.props.handleLogin}
-                onFailure={(err) => console.log(err)}
-              />
-            )}
           </div>
         </div>
       </>
     );
   }
 }
+// ATLAS_SRV = "mongodb+srv://prtyr:ZSsOoWnge7gxAYUi@cluster0-eks3r.mongodb.net/test?retryWrites=true&w=majority"
+
 
 export default Topbar;

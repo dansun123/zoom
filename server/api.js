@@ -20,6 +20,8 @@ const Game = require("./models/game");
 const Room = require("./models/room");
 const Message = require("./models/message");
 const Song = require("./models/song");
+const fs = require('fs');
+
 
 // import authentication library
 const auth = require("./auth");
@@ -444,22 +446,6 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
   res.send({});
 });
 
-router.post("/updateSongs", (req,res) => {
-  Song.find({}).then((songs) => {
-    songs.forEach((song) => {
-      request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist)+'&entity=song&limit=1', (error, response, body) => {
-      if (!error && response.statusCode == 200) {
-        
-        let songUrl = JSON.parse(body).results[0].previewUrl
-        song.songUrl = songUrl
-        song.save();
-      }
-    })
-    })
-  })
-  res.send({})
-})
-
 router.post("/newSongReq", auth.ensureLoggedIn, (req, res) => {
   Room.findOne({roomID: req.body.roomID}).then((room) => {
     let q = room.queue;
@@ -481,6 +467,69 @@ router.post("/setRoomID", auth.ensureLoggedIn, (req, res) => {
     })
   })
 })
+
+// router.post("/getInstrumentals", (req,res) => {
+//   let obj = {
+//     table: []
+//   };
+//   let numAdded=0
+//   Song.find({}).then((songs) => {
+//     songs.forEach((song) => {
+//       request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist + " instrumental")+'&entity=song&limit=1', (error, response, body) => {
+//         if (!error && response.statusCode == 200 && JSON.parse(body).results[0]) {
+//           let songUrl = JSON.parse(body).results[0].previewUrl
+//           obj.table.push({
+//             title: song.title,
+//             primaryArtist: song.primaryArtist,
+//             artUrl: song.artUrl,
+//             songUrl: songUrl,
+//           })
+//         }
+//         numAdded+=1;
+//         if(numAdded === songs.length) {
+//           var json = JSON.stringify(obj)
+//           fs.writeFile('myjsonfile.json', json, 'utf8', ()=>{console.log("success")})
+//         }
+//       })
+//     })
+//   })
+//   res.send({complete: true})
+// })
+
+// router.get("/readJSON", (req, res)=> {
+//   fs.readFile('myjsonfile.json', 'utf8', function readFileCallback(err, data){
+//     if (err){
+//       console.log(err);
+//     } else {
+//       obj = JSON.parse(data); //now it an object
+//       console.log(obj.table.length)
+//       res.send({complete: obj})
+//     }
+//   })
+// })
+
+// router.post("/instrumentals", (req,res) => {
+//   fs.readFile('myjsonfile.json', 'utf8', function readFileCallback(err, data){
+//     if (err){
+//       console.log(err);
+//     } else {
+//       obj = JSON.parse(data); //now it an object
+//       obj.table.forEach((song) => {
+//         let newSong = new Song({
+//           title: song.title,
+//           primaryArtist: song.primaryArtist,
+//           artUrl: song.artUrl,
+//           songUrl: song.songUrl,
+//         })
+//         console.log(newSong)
+//         newSong.save();
+//       })
+//     }
+//   })
+//   res.send({complete: true})
+// })
+
+
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
