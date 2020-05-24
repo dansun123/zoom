@@ -61,13 +61,13 @@ class Room extends Component {
             roomData: [],
             redirect: false,
             refresh: false,
-        
+            copied: false
         }
     }
     componentDidMount() {
         post("/api/joinRoom", {roomName: this.state.roomName}).then((data) => {
             if(data.exists)
-                 this.setState({roomID: data.roomID, roomData: data.roomData, status: data.status, isLoading: false})
+                 this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
             else {
                 this.setState({isLoading: true, status: "doesNotExist"})
             }
@@ -114,11 +114,8 @@ class Room extends Component {
 
         socket.on("startGame", (data) => {
             if(this.state.roomName !== data.roomName) return;
-            this.setState({roundNum: data.roundNum})
-            if(this.state.status === "timer") {
-                this.setState({status: "inProgress"})
-                
-            }
+            this.setState({roundNum: data.roundNum, status: "inProgress"})
+          
 
         })
 
@@ -131,6 +128,7 @@ class Room extends Component {
                 endTime: data.endTime, 
                 startTime: data.startTime, 
                 songID: data.songID,
+                answer: data.answer,
                 songURL: data.url,
                 timeToStart: 5
                 
@@ -146,6 +144,18 @@ class Room extends Component {
                 }
             
             }, 1000)
+        })
+
+
+        socket.on("results", (data) => {
+            if(this.state.roomName !== data.roomName) return;
+            
+               
+            this.setState({
+                status: "results", 
+                answer: data.answer
+            })
+
         })
 
         socket.on("disconnect", () => {
@@ -175,16 +185,12 @@ class Room extends Component {
             </>
         }
 
-        let blankGameData = this.state.users.map((user) => {
-            return {userId: user.userId, userName: user.userName, score: 0, lyrics: [], mode: user.mode}
-        })
-        
-        let body = <></>
+
         if(this.state.status === "waitingToFinish") {
             body = <h1>Waiting for Game to Finish</h1>
            
         }
-        else if(this.state.status === "waitingToStart") {
+        else if(this.state.status === "waiting") {
             body = 
             <>
             <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
@@ -206,7 +212,7 @@ class Room extends Component {
             body = 
             <>
             <h2 style={{display: "flex", justifyContent: "center"}}>Game starting in {this.state.timeToStart} seconds</h2>
-            <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
             </>
 
         }
@@ -215,51 +221,25 @@ class Room extends Component {
             <>
             
             <Timer endTime={this.state.endTime} />
-
-            {this.state.mode === "Typing" ? <TextField
-          id="filled-basic"
-          label="Lyrics"
-          variant="outlined"
-          style={{color: "#678efd"}}
-          autoFocus
-          fullWidth
-          autoComplete='off' 
-          value={this.state.currentWord}
-          
-          onChange={(event) => {
-            this.setState({ currentWord: event.target.value });
-          }}
-          onKeyPress = {(event) => {
-            if(event.charCode === 32) {
-                let lyrics = this.state.lyrics
-                lyrics.push(this.state.currentWord)
-                this.setState({lyrics: lyrics, currentWord: ""}, () => {
-                    post("/api/updateGameData", {gameID: this.state.gameID, lyrics: lyrics, roomID: this.state.roomID, mode: this.state.mode})
-                })
-                
-              /*
-              submitAnswer(this.state.theirAnswer)
-              this.setState({
-               
-                theirAnswer: "",
-              });
-              */
-            }
-          }}
-        /> : 
-          <></>
-        }
-          <Box style={{display: "flex", justifyContent: "center", alignItems: "center"}}><Box width={600}><ReactPiano instrument={this.state.mode} gameID={this.state.gameID} /></Box></Box>
-       
-            <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
             </>
 
         }
-        else if(this.state.status === "finished") {
+        else if(this.state.status === "gameFinished") {
             body = 
             <>
-            <h2 style={{display: "flex", justifyContent: "center"}}>Results</h2>
+            <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[0]})}}>Start New Game</Button>
+            </>
+        }
+        else if(this.state.status === "results") {
+            body = 
+            <>
+
+            <h2 style={{display: "flex", justifyContent: "center"}}>Final Results</h2>
             <ScorePage gameData = {this.state.gameData} userId = {this.props.userId} />
+            <h3 style={{display: "flex", justifyContent: "center"}}>{"Answer: "+this.state.answer.title + " by " + this.state.answer.primaryArtist}</h3>
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, song: this.state.queue[0]})}}>Start New Game</Button>
             </>
 
@@ -271,39 +251,19 @@ class Room extends Component {
 
         return (
             <>
-                {/*<button onClick = {()=>{console.log(this.state)}}>log room state</button>*/}
                 
-                 {/*<img src = {silent}></img>*/}
                  <Grid container direction="row">
-                 {/* <div class="wrapper" id="wrapper">
-                <label class="file" for="file">
-                    choose a mp3 file
-                    <input id="file" type="file"/>
-                </label>
-                </div> */}
-                 {/* <h2 class="message">PLAY</h2>
-                <a id="badge" href="http://www.chromeexperiments.com/experiment/audio-cloud/" target="_blank"><img src="https://lab.ma77os.com/audio-cloud/img/b4.png" alt="See my Experiment on ChromeExperiments.com"/></a>
-                <a class="experiment-url" href="https://lab.ma77os.com/audio-cloud" target="_blank">source: lab.ma77os.com/audio-cloud</a> */}
-                <Box width={"calc(100% - 400px)"} >
+                 <Box width={"calc(100% - 400px)"} >
                      {body}
                 </Box>
                 <Box width={"400px"} >
-                {this.state.status !== "inProgress" && this.state.status !== "timer" ? <Select
-          value={this.state.mode}
-          fullWidth
-          onChange={(event) => {
-              
-              this.setState({mode: event.target.value})
-                post("/api/setMode", {mode: event.target.value})
-                }}
-        >
+               
    
-          {["Typing"].concat(instruments).map((instrument) =>{return <MenuItem value={instrument}>{instrument}</MenuItem>})}
-                </Select>:<></>}                
+                     
 
-                    {this.state.status === "inProgress" && window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
+                    {window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
                 <Music url = {this.state.songURL} visual={true}></Music>
-            </Box> : <SongQueue queue = {this.state.queue} roomID ={this.state.roomID}/>}
+            </Box> : <></>}
             <Chat messages={this.props.chat} roomID={this.state.roomID} />
             
                 </Box>

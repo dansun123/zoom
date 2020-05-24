@@ -132,21 +132,21 @@ router.post("/startGame", (req, res) => {
               let curSong = songs[roundNum]
               socket.getIo().emit("startTimer", {roomName: req.body.roomName, songID: curSong._id, url: curSong.songUrl, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime), roundNum: 1})              
               Room.find({name: req.body.roomName}).then((room) => {
-                room.status = "1inProgress"
+                room.status = "inProgress"
                 room.save()
               })
             }
             setTimeout(() => {
               socket.getIo().emit("startGame", {roomName: req.body.roomName, roundNum: roundNum + 1})
               Room.find({name: req.body.roomName}).then((room) => {
-                room.status = (roundNum + 1) + "inProgress"
+                room.status = "inProgress"
                 room.save()
               })
             }, times[roundNum].startTime)              
             if(roundNum !== rounds - 1) {
               let curSong = songs[roundNum+1]
               setTimeout(() => {
-                socket.getIo().emit("finishGame", {roomName: req.body.roomName, songID: curSong._id, url: curSong.songUrl,  startTime: fromNow(times[roundNum+1].startTime), endTime: fromNow(times[roundNum+1].endTime)})
+                socket.getIo().emit("finishGame", {answer: songs[roundNum], roomName: req.body.roomName, songID: curSong._id, url: curSong.songUrl,  startTime: fromNow(times[roundNum+1].startTime), endTime: fromNow(times[roundNum+1].endTime)})
                 Room.find({name: req.body.roomName}).then((room) => {
                   room.status = "gameFinished"
                   room.save()
@@ -155,7 +155,7 @@ router.post("/startGame", (req, res) => {
             }
             else {
               setTimeout(() => {
-                socket.getIo().emit("results", {roomName: req.body.roomName})
+                socket.getIo().emit("results", {answer: songs[roundNum], roomName: req.body.roomName})
                 Room.find({name: req.body.roomName}).then((room) => {
                   room.status = "roundFinished"
                   room.save()
