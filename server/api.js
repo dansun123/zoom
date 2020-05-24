@@ -123,6 +123,7 @@ router.post("/startGame", (req, res) => {
       if(songs.length === ssongs.length) {
 
           // start the process!!!
+          console.log(songs)
           times = []
           
           let mostRecentTime = 0
@@ -205,12 +206,14 @@ let similarity = (a, b) => {
 
 router.post("/newMessage", (req, res) => {
   let systemMessage = false
+  let style="message"
   let messageText = req.body.message
   if(req.body.systemMessage) systemMessage = true
   else {
     if(req.body.inGame && similarity(messageText, req.body.title) > 0.7) {
       systemMessage = true 
       messageText = req.body.userName + " guessed the title!"
+      style="Correct Answer"
       let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + req.body.points}
       Room.findOne({roomID: req.body.roomID}).then((room) => {
         let data = room.data 
@@ -231,7 +234,8 @@ router.post("/newMessage", (req, res) => {
     sender: {userID: req.body.userID, userName: req.body.userName},
     roomID: req.body.roomID, 
     message: messageText,
-    systemMessage: systemMessage
+    systemMessage: systemMessage,
+    style: style,
   })
 
 
