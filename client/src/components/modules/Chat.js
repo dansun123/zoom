@@ -21,7 +21,7 @@ class Chat extends React.Component {
   handleSubmit = event => {
     event.preventDefault();
     // this.sendMessage();
-    post("api/newMessage", {message: this.state.messageText, roomID: this.props.roomID}).then(() => {
+    post("api/newMessage", {message: this.state.messageText, roomID: this.props.roomID, inGame: this.props.status === "inProgress", title: this.props.song.title, score: this.props.score, userID: this.props.userID, userName: this.props.userName}).then(() => {
       this.setState({ messageText: ""})
     });
   };

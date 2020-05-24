@@ -43,10 +43,11 @@ class Room extends Component {
         this.state = {
             roomName: String(this.props.computedMatch.params.id),
             status: "waitingToFinish",
+            score: 0,
             isLoading: true,
             endTime: new Date(),
             startTime: new Date(),
-            songURL: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a",
+            song: {title: "hi", primaryArtist: "hi", artUrl: "", songUrl: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a"},
             timeToStart: 3,
             roomData: [],
             redirect: false,
@@ -75,6 +76,7 @@ class Room extends Component {
             arr = arr.filter((obj) => {return obj.userID !== update.entry.userID})
             arr.push(update.entry)
             this.setState({roomData: arr})
+            if(update.userID === this.props.userID) this.setState({score: update.score})
         })
 
         socket.on("startTimer", (data) => {
@@ -84,8 +86,7 @@ class Room extends Component {
                 status: "timer", 
                 endTime: data.endTime, 
                 startTime: data.startTime, 
-                songID: data.songID,
-                songURL: data.url,
+                song: data.song,
                 roundNum: data.roundNum
             })
 
@@ -117,9 +118,9 @@ class Room extends Component {
                 status: "gameFinished", 
                 endTime: data.endTime, 
                 startTime: data.startTime, 
-                songID: data.songID,
+                song: data.song,
                 answer: data.answer,
-                songURL: data.url,
+   
                 timeToStart: 5
                 
             })
@@ -251,9 +252,9 @@ class Room extends Component {
                      
 
                     {window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
-                <Music url = {this.state.songURL} visual={true}></Music>
+                <Music url = {this.state.song.songUrl} visual={true}></Music>
             </Box> : <></>}
-            <Chat messages={this.props.chat} roomID={this.state.roomID} />
+            <Chat messages={this.props.chat} roomID={this.state.roomID} status={this.state.status} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
             
                 </Box>
                 </Grid>
