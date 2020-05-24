@@ -5,6 +5,7 @@ import "../../utilities.css";
 import "./Main.css";
 import { get, post } from "../../utilities";
 import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
 
 //contains public chat and a create-room button
 
@@ -33,9 +34,9 @@ class Main extends Component {
           onChange={this.props.handleChange}
     
           />
-        <button onClick = {()=>{this.props.createRoom()}}>Create Room</button>
-        <button onClick = {()=>{this.props.playNow()}}>Play Now</button>
-        <h1>Put some logo thing here and add css</h1>
+        <Button onClick = {()=>{this.props.createRoom()}}>Create Room</Button>
+        <Button onClick = {()=>{this.props.playNow()}}>Play Now</Button>
+       
       </>
     );
   }

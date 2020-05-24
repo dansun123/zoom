@@ -44,6 +44,7 @@ class App extends Component {
       userID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       roomID: "",
       didPlay: false,
+      chat: []
     };
 
     // if (cookies.get('name')) {
@@ -53,9 +54,12 @@ class App extends Component {
   }
 
   componentDidMount() {
+    let roomID = window.location.href.substring(window.location.href.indexOf("/",9)+1)
     this.setState({
-      roomID: window.location.href.substring(window.location.href.indexOf("/",9)+1)
+      roomID: roomID,
+      didPlay: false
     })
+
     socket.on('newMessage', (message) => {
       let newChat  = this.state.chat;
       newChat.push(message)
@@ -74,20 +78,23 @@ class App extends Component {
     if(this.state.userName==="") {
       this.setState({userName: "Guest"+makeid(5)})
     }
-    post('api/createNewRoom', {}).then((res) => {
-      this.setState({
-        roomID: res.id
-      })
+    let randomRoomID = Math.random().toString(36).substring(2, 15)
+    post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
+      this.setState({roomID: randomRoomID, didPlay: true});
     })
   }
 
   playNow = () => {
-    this.setState({didPlay: true})
     if(this.state.userName==="") {
       this.setState({userName: "Guest"+makeid(5)})
     }
-    if(this.state.roomID==="") {
-      this.setState({roomID: 'main'});
+    if(this.state.roomID === "") {
+    post('api/createNewRoom', {roomID: "main"}).then((res) => {
+      this.setState({roomID: "main", didPlay: true});
+    })
+    }
+    else {
+      this.setState({didPlay: true});
     }
   };
 
@@ -100,6 +107,7 @@ class App extends Component {
           userName = {this.state.userName}
           roomID = {this.state.roomID}
           userID = {this.state.userID}
+          chat = {this.state.chat}
         />
   }
       </>

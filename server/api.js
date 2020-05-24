@@ -15,8 +15,6 @@ var request = require('request');
 const levenshteiner = require('levenshteiner');
 const utf8 = require('utf8');
 // import models so we can interact with the database
-const User = require("./models/user");
-const Game = require("./models/game");
 const Room = require("./models/room");
 const Message = require("./models/message");
 const Song = require("./models/song");
@@ -61,14 +59,20 @@ router.post("/initsocket", (req, res) => {
 
 
 
-router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
+router.post("/createNewRoom", (req, res) => {
 
-  Room.findOne({name: req.body.roomName}, (room) => {
+  Room.findOne({roomID: req.body.roomID}).then((room) => {
     if(room) {
+      console.log("Already exists")
       res.send({created: false})
     } else {
-      const newRoom = new Room({name: req.body.roomName, data: [], status: "waiting"});
-      res.send({created: true})
+      console.log(req.body.roomID)
+      console.log("New Main")
+      const newRoom = new Room({roomID: req.body.roomID, data: [], status: "waiting"});
+      newRoom.save().then(() => {
+        res.send({created: true})
+      })
+     
     }
   })
   // After this you have to join it! Either way you will be able to :) 
@@ -77,15 +81,16 @@ router.post("/createNewRoom", auth.ensureLoggedIn,(req, res) => {
 
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
 router.post("/joinRoom", (req, res) => {
-  Room.findOne({name : req.body.roomName}).then((room) => {
+  Room.findOne({roomID: req.body.roomID}).then((room) => {
     if(room) {
-      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomName: req.body.roomName})
+      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID})
       let message = new Message({
         sender: {userID: req.body.userID, userName: req.body.userName},
         roomID: req.body.roomID, 
         message: req.body.userName + " joined the Room",
         systemMessage: true
       })
+      message.save()
       socket.getIo().emit("newMessage", message)
       
       let data = room.data 
@@ -117,11 +122,14 @@ router.post("/startGame", (req, res) => {
 
           // start the process!!!
           times = []
+          
+          let mostRecentTime = 0
+          let curTime = new Date()
           let fromNow = (num) => {
-            return new Date((new Date()).getTime() + num)
+            return new Date((curTime).getTime() + num)
           }
           for(roundNum = 0; roundNum < rounds; roundNum += 1) {
-            let mostRecentTime = 0
+            
             let mostRecentRoundTimes = {startTime: mostRecentTime + 5000, endTime: mostRecentTime + 35000}
             times.push(mostRecentRoundTimes)
             mostRecentTime = mostRecentRoundTimes.endTime
@@ -130,37 +138,44 @@ router.post("/startGame", (req, res) => {
           for(roundNum = 0; roundNum < rounds; roundNum += 1) {
             if(roundNum === 0) {
               let curSong = songs[roundNum]
-              socket.getIo().emit("startTimer", {roomName: req.body.roomName, song: cursong, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime), roundNum: 1})              
-              Room.find({name: req.body.roomName}).then((room) => {
+              
+              socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: curSong, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime), roundNum: 1})              
+              Room.findOne({roomID: req.body.roomID}).then((room) => {
                 room.status = "inProgress"
+                let data = room.data 
+                let i = 0
+                for(i=0; i<data.length; i++) data[i].score = 0 
+                room.data = data
                 room.save()
               })
             }
+            let curRoundNum = roundNum
             setTimeout(() => {
-              socket.getIo().emit("startGame", {roomName: req.body.roomName, roundNum: roundNum + 1})
-              Room.find({name: req.body.roomName}).then((room) => {
+              socket.getIo().emit("startGame", {roomID: req.body.roomID, roundNum: curRoundNum  + 1})
+              Room.findOne({roomID: req.body.roomID}).then((room) => {
                 room.status = "inProgress"
                 room.save()
               })
-            }, times[roundNum].startTime)              
-            if(roundNum !== rounds - 1) {
-              let curSong = songs[roundNum+1]
+            }, times[curRoundNum].startTime)              
+            if(curRoundNum  !== rounds - 1) {
+              let curSong = songs[curRoundNum +1]
               setTimeout(() => {
-                socket.getIo().emit("finishGame", {answer: songs[roundNum], roomName: req.body.roomName, song: curSong,  startTime: fromNow(times[roundNum+1].startTime), endTime: fromNow(times[roundNum+1].endTime)})
-                Room.find({name: req.body.roomName}).then((room) => {
+                
+                socket.getIo().emit("finishGame", {answer: songs[curRoundNum], roomID: req.body.roomID, song: curSong,  startTime: fromNow(times[curRoundNum+1].startTime), endTime: fromNow(times[curRoundNum+1].endTime)})
+                Room.findOne({roomID: req.body.roomID}).then((room) => {
                   room.status = "gameFinished"
                   room.save()
                 })
-              }, times[roundNum].endTime) 
+              }, times[curRoundNum].endTime) 
             }
             else {
               setTimeout(() => {
-                socket.getIo().emit("results", {answer: songs[roundNum], roomName: req.body.roomName})
-                Room.find({name: req.body.roomName}).then((room) => {
+                socket.getIo().emit("results", {answer: songs[curRoundNum], roomID: req.body.roomID})
+                Room.findOne({roomID: req.body.roomID}).then((room) => {
                   room.status = "roundFinished"
                   room.save()
                 })
-              }, times[roundNum].endTime) 
+              }, times[curRoundNum].endTime) 
             }
       
           }
@@ -186,7 +201,7 @@ let similarity = (a, b) => {
 
 
 
-router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
+router.post("/newMessage", (req, res) => {
   let systemMessage = false
   let messageText = req.body.message
   if(req.body.systemMessage) systemMessage = true
@@ -194,8 +209,8 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
     if(req.body.inGame && similarity(messageText, req.body.title) > 0.7) {
       systemMessage = true 
       messageText = req.body.userName + " guessed the title!"
-      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + 1}
-      Room.find({name: req.body.roomName}).then((room) => {
+      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + req.body.points}
+      Room.findOne({roomID: req.body.roomID}).then((room) => {
         let data = room.data 
         data = data.filter((entry) => {
           return entry.userID !== req.body.userID;
@@ -204,16 +219,16 @@ router.post("/newMessage", auth.ensureLoggedIn, (req, res) => {
         room.data = data 
         room.save()
       })
-      socket.getIo().emit("updateRoomData", {roomName: req.body.roomName, entry: newEntry})
+      socket.getIo().emit("updateRoomData", {userID: req.body.userID, roomID: req.body.roomID, entry: newEntry})
     }
   }
 
 
 
   let message = new Message({
-    sender: {userId: req.user._id, userName: req.user.userName},
+    sender: {userID: req.body.userID, userName: req.body.userName},
     roomID: req.body.roomID, 
-    message: req.body.message,
+    message: messageText,
     systemMessage: systemMessage
   })
 

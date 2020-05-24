@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const RoomSchema = new mongoose.Schema({
-  name: String,
+  roomID: String,
   data: [{
     userID: String,
     userName: String,

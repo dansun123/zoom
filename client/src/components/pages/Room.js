@@ -41,14 +41,14 @@ class Room extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            roomName: String(this.props.computedMatch.params.id),
             status: "waitingToFinish",
             score: 0,
             isLoading: true,
             endTime: new Date(),
+            answered: false,
             startTime: new Date(),
             song: {title: "hi", primaryArtist: "hi", artUrl: "", songUrl: "https://audio-ssl.itunes.apple.com/apple-assets-us-std-000001/AudioPreview71/v4/d7/f3/c5/d7f3c5c3-c38d-34e0-be13-4b4263af8847/mzaf_1361022562394107098.plus.aac.p.m4a"},
-            timeToStart: 3,
+            timeToStart: 5,
             roomData: [],
             redirect: false,
             refresh: false,
@@ -56,37 +56,40 @@ class Room extends Component {
         }
     }
     componentDidMount() {
-        post("/api/joinRoom", {roomName: this.state.roomName, userID: this.props.userID, userName: this.props.userName}).then((data) => {
+        
+        post("/api/joinRoom", {roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
             if(data.exists)
                  this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
             else {
-                this.setState({isLoading: true, status: "doesNotExist"})
+                this.setState({isLoading: false, status: "doesNotExist"})
             }
         }) 
+
         socket.on("someoneJoinedRoom", (user) => {
-            if(user.roomName !== this.state.roomName) return;
+            if(user.roomID !== this.props.roomID) return;
             let data = this.state.roomData
             data.push({userID: user.userID, userName: user.userName, score: 0})
             this.setState({roomData: data})
         })
 
         socket.on("updateRoomData", (update) => {
-            if(update.roomName !== this.state.roomName) return;
+            if(update.roomID !== this.props.roomID) return;
             let arr = this.state.roomData
             arr = arr.filter((obj) => {return obj.userID !== update.entry.userID})
             arr.push(update.entry)
             this.setState({roomData: arr})
-            if(update.userID === this.props.userID) this.setState({score: update.score})
+            if(update.entry.userID === this.props.userID) this.setState({score: update.entry.score, answered: true})
         })
 
         socket.on("startTimer", (data) => {
-            if(this.state.roomName !== data.roomName) return;
+            if(this.props.roomID !== data.roomID) return;
 
             this.setState({
                 status: "timer", 
                 endTime: data.endTime, 
                 startTime: data.startTime, 
                 song: data.song,
+                score: 0,
                 roundNum: data.roundNum
             })
 
@@ -104,14 +107,14 @@ class Room extends Component {
         })
 
         socket.on("startGame", (data) => {
-            if(this.state.roomName !== data.roomName) return;
-            this.setState({roundNum: data.roundNum, status: "inProgress"})
+            if(this.props.roomID !== data.roomID) return;
+            this.setState({roundNum: data.roundNum, status: "inProgress", answered: false})
           
 
         })
 
         socket.on("finishGame", (data) => {
-            if(this.state.roomName !== data.roomName) return;
+            if(this.props.roomID !== data.roomID) return;
             
                
             this.setState({
@@ -139,11 +142,11 @@ class Room extends Component {
 
 
         socket.on("results", (data) => {
-            if(this.state.roomName !== data.roomName) return;
+            if(this.props.roomID !== data.roomID) return;
             
                
             this.setState({
-                status: "results", 
+                status: "roundFinished", 
                 answer: data.answer
             })
 
@@ -162,13 +165,25 @@ class Room extends Component {
         })
     }
 
+    componentDidUpdate(prevProps) {
+        if(this.props.roomID !== prevProps.roomID) {
+            post("/api/joinRoom", {roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
+                if(data.exists)
+                     this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
+                else {
+                    this.setState({isLoading: false, status: "doesNotExist"})
+                }
+            }) 
+        }
+    }
+
     render() {
         
         if(this.state.redirect) {
             return <Redirect to="/" />
         }
         if(this.state.refresh) {
-            return <Redirect to={"/"+this.state.roomID} />
+            return <Redirect to={"/"+this.props.roomID} />
         }
         if(this.state.isLoading) {
             return <>
@@ -176,27 +191,19 @@ class Room extends Component {
             </>
         }
 
-
+        let body = <></>
         if(this.state.status === "waitingToFinish") {
             body = <h1>Waiting for Game to Finish</h1>
            
         }
         else if(this.state.status === "waiting") {
+            
             body = 
             <>
-            <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
-                    Invite Link: {window.location.href}
-                    <CopyToClipboard text={window.location.href}
-                        onCopy={() => {this.setState({copied:true})}}>
-                        {!this.state.copied ? 
-                            <button className = "button2">Copy to clipboard</button>
-                            : <button className = "button2">Copied to clipboard!</button>
-                        }
-                    </CopyToClipboard>
-                 </h3>
+            
             <h2 style={{display: "flex", justifyContent: "center"}}>Waiting to Start</h2> 
             <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
-            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, roomName: this.state.roomName, song: this.state.queue[0]})}}>Start Game</Button>
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.props.roomID})}}>Start Game</Button>
             </>
         }
         else if(this.state.status === "timer") {
@@ -219,26 +226,42 @@ class Room extends Component {
         else if(this.state.status === "gameFinished") {
             body = 
             <>
+            {(this.state.answer) ? 
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
+            : <></>}
             <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            
+            <h3 style={{display: "flex", justifyContent: "center"}}>Next Round in {this.state.timeToStart} seconds</h3>
+           
             </>
         }
-        else if(this.state.status === "results") {
+        else if(this.state.status === "roundFinished") {
             body = 
             <>
 
             <h2 style={{display: "flex", justifyContent: "center"}}>Final Results</h2>
             <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
-            <h3 style={{display: "flex", justifyContent: "center"}}>{"Answer: "+this.state.answer.title + " by " + this.state.answer.primaryArtist}</h3>
-            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.state.roomID, roomName: this.state.roomName, song: this.state.queue[0]})}}>Start New Game</Button>
+            {(this.state.answer) ? 
+            <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
+            : <></>}            
+            <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.props.roomID})}}>Start New Game</Button>
             </>
+
+        }
+        else if(this.state.status === "doesNotExist") {
+            body = 
+          
+
+            <h2 style={{display: "flex", justifyContent: "center"}}>This Room Does Not Exist Yet</h2>
+            
 
         }
         else {
             // should never happen
             body = <h1>Theres  a bug</h1>
         }
-
+        let url = window.location.href
+            if(url.charAt(url.length - 1) === '/') url += this.props.roomID
         return (
             <>
                 
@@ -252,10 +275,19 @@ class Room extends Component {
                      
 
                     {window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
-                <Music url = {this.state.song.songUrl} visual={true}></Music>
+                <Music url = {this.state.song.songUrl} visual={true} pauseButton={false}></Music>
             </Box> : <></>}
-            <Chat messages={this.props.chat} roomID={this.state.roomID} status={this.state.status} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
-            
+            <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
+            <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
+                    Invite Link: {url}
+                    {/*<CopyToClipboard text={url}
+                        onCopy={() => {this.setState({copied:true})}}>
+                        {!this.state.copied ? 
+                            <button className = "button2">Copy to clipboard</button>
+                            : <button className = "button2">Copied to clipboard!</button>
+                        }
+                    </CopyToClipboard>*/}
+                 </h3>
                 </Box>
                 </Grid>
                 
