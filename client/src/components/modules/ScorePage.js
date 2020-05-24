@@ -9,22 +9,17 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 export default function ScorePage(props) {
   const [maxValue, setMaxValue] = useState(15)
   let scoreListElements = props.roomData.sort((a, b) => {return b.score - a.score}).map((user, place) => {
-    let color = "#6c57f5"
+  
     let fontWeight = 'normal'
 
-    let nameColor = "#0000FF"
+    let nameColor = "#2196f3"
 
-    if(user.userId === props.userId) {
-      color = "#678efd"
+    if(user.userID === props.userID) {
+      nameColor = "#f50057"
       fontWeight = 'bold'
 
     }
-    if(user.userId === "0") {
-      color = "#3bb033"
-      fontWeight = 'bold'
-      nameColor = "#3bb033"
-    }
- 
+  
    
     if(user.score > maxValue) {
       setMaxValue(maxValue * 2)

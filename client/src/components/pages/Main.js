@@ -32,8 +32,12 @@ class Main extends Component {
           value={this.props.userName}
           fullWidth
           onChange={this.props.handleChange}
-    
-          />
+          autoFocus 
+          onKeyPress={(event) => {
+            if(event.charCode===13) {
+              this.props.playNow()
+            }
+        }} />
         <Button onClick = {()=>{this.props.createRoom()}}>Create Room</Button>
         <Button onClick = {()=>{this.props.playNow()}}>Play Now</Button>
        
