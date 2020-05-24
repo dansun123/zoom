@@ -83,15 +83,15 @@ class Room extends Component {
 
         socket.on("startTimer", (data) => {
             if(this.props.roomID !== data.roomID) return;
-            let data = this.state.roomData 
+            let newdata = this.state.roomData 
             let i = 0
-            for(i=0; i<data.length; i++) data[i].score = 0 
+            for(i=0; i<newdata.length; i++) newdata[i].score = 0 
                 
             this.setState({
                 status: "timer", 
                 endTime: data.endTime, 
                 startTime: data.startTime, 
-                roomData: data,
+                roomData: newdata,
                 song: data.song,
                 score: 0,
                 roundNum: data.roundNum
