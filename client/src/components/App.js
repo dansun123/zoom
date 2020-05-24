@@ -43,6 +43,7 @@ class App extends Component {
       userName: "",
       userID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       roomID: "",
+      socketid: "",
       didPlay: false,
       chat: []
     };
@@ -59,7 +60,9 @@ class App extends Component {
       roomID: roomID,
       didPlay: false
     })
-
+    socket.on('connect', () => {
+      this.setState({socketid: socket.id})
+    });
     socket.on('newMessage', (message) => {
       let newChat  = this.state.chat;
       newChat.push(message)
@@ -108,6 +111,7 @@ class App extends Component {
           roomID = {this.state.roomID}
           userID = {this.state.userID}
           chat = {this.state.chat}
+          socketid = {this.state.socketid}
         />
   }
       </>

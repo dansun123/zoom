@@ -43,6 +43,7 @@ class Room extends Component {
         this.state = {
             status: "waitingToFinish",
             score: 0,
+      
             isLoading: true,
             endTime: new Date(),
             answered: false,
@@ -52,19 +53,30 @@ class Room extends Component {
             roomData: [],
             redirect: false,
             refresh: false,
-            copied: false
+            copied: false,
+            
         }
     }
     componentDidMount() {
-        
-        post("/api/joinRoom", {roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
+        if(this.props.socketid !== "") {
+        post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
             if(data.exists)
                  this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
             else {
                 this.setState({isLoading: false, status: "doesNotExist"})
             }
         }) 
+        }
 
+       
+
+        socket.on("removeUser", (user) => {
+            if(user.roomID !== this.props.roomID) return;
+            let data = this.state.roomData 
+            data = data.filter((entry) => {return entry.userID !== user.userID})
+            this.setState({roomData: data})
+         
+        })
         socket.on("someoneJoinedRoom", (user) => {
             if(user.roomID !== this.props.roomID) return;
             let data = this.state.roomData
@@ -170,8 +182,8 @@ class Room extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if(this.props.roomID !== prevProps.roomID) {
-            post("/api/joinRoom", {roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
+        if((this.props.roomID !== prevProps.roomID) || (this.props.socketid !== prevProps.socketid)) {
+            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
                 if(data.exists)
                      this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
                 else {
@@ -284,14 +296,15 @@ class Room extends Component {
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
             <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
                     Invite Link: {url}
-                    {/*<CopyToClipboard text={url}
+                   
+                 </h3>
+                  <CopyToClipboard text={url}
                         onCopy={() => {this.setState({copied:true})}}>
                         {!this.state.copied ? 
-                            <button className = "button2">Copy to clipboard</button>
-                            : <button className = "button2">Copied to clipboard!</button>
+                            <Button fullWidth className = "button2">Copy to clipboard</Button>
+                            : <Button fullWidth className = "button2">Copied to clipboard!</Button>
                         }
-                    </CopyToClipboard>*/}
-                 </h3>
+                    </CopyToClipboard>
                 </Box>
                 </Grid>
                 

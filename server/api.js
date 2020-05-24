@@ -81,6 +81,7 @@ router.post("/createNewRoom", (req, res) => {
 
 // sends a list of users in the room (objects {userId: aw23aa, userName: AkshajK})
 router.post("/joinRoom", (req, res) => {
+  socket.addUser({userID: req.body.userID, roomID: req.body.roomID, userName: req.body.userName}, socket.getSocketFromSocketID(req.body.socketid));
   Room.findOne({roomID: req.body.roomID}).then((room) => {
     if(room) {
       socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID})
@@ -110,6 +111,7 @@ router.post("/joinRoom", (req, res) => {
 
 
 router.post("/startGame", (req, res) => {
+  console.log("startGame")
   var rounds = 6
   var roundNum = 0;
   var songs = []
@@ -138,7 +140,7 @@ router.post("/startGame", (req, res) => {
           for(roundNum = 0; roundNum < rounds; roundNum += 1) {
             if(roundNum === 0) {
               let curSong = songs[roundNum]
-              
+              console.log("startin timer")
               socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: curSong, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime), roundNum: 1})              
               Room.findOne({roomID: req.body.roomID}).then((room) => {
                 room.status = "inProgress"

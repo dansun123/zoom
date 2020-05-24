@@ -1,5 +1,6 @@
 let io;
-
+const Room = require("./models/room");
+const Message = require("./models/message");
 const userToSocketMap = {}; // maps user ID to socket object
 const socketToUserMap = {}; // maps socket ID to user object
 
@@ -8,7 +9,7 @@ const getUserFromSocketID = (socketid) => socketToUserMap[socketid];
 const getSocketFromSocketID = (socketid) => io.sockets.connected[socketid];
 
 const addUser = (user, socket) => {
-  const oldSocket = userToSocketMap[user._id];
+  const oldSocket = userToSocketMap[user.userID];
   if (oldSocket && oldSocket.id !== socket.id) {
     // there was an old tab open for this user, force it to disconnect
     // FIXME: is this the behavior you want?
@@ -16,12 +17,12 @@ const addUser = (user, socket) => {
     delete socketToUserMap[oldSocket.id];
   }
 
-  userToSocketMap[user._id] = socket;
+  userToSocketMap[user.userID] = socket;
   socketToUserMap[socket.id] = user;
 };
 
 const removeUser = (user, socket) => {
-  if (user) delete userToSocketMap[user._id];
+  if (user) delete userToSocketMap[user.userID];
   delete socketToUserMap[socket.id];
 };
 
@@ -34,6 +35,24 @@ module.exports = {
       socket.on("disconnect", (reason) => {
         const user = getUserFromSocketID(socket.id);
         removeUser(user, socket);
+        if(user) {
+        Room.findOne({roomID: user.roomID}).then((room) => {
+          let data = room.data 
+          data = data.filter((entry) => {return entry.userID !== user.userID})
+          room.data = data
+          room.save()
+        })
+        io.emit("removeUser", {userID: user.userID, roomID: user.roomID});
+        let message = new Message({
+          sender: {userID: user.userID, userName: user.userName},
+          roomID: user.roomID, 
+          message: user.userName + " left the Room",
+          systemMessage: true
+        })
+        message.save()
+        io.emit("newMessage", message)
+
+        }
       });
     });
   },
