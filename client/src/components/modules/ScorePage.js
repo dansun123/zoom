@@ -8,7 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import LinearProgress from '@material-ui/core/LinearProgress'
 export default function ScorePage(props) {
   const [maxValue, setMaxValue] = useState(15)
-  let scoreListElements = props.gameData.sort((a, b) => {return b.score - a.score}).map((user, place) => {
+  let scoreListElements = props.roomData.sort((a, b) => {return b.score - a.score}).map((user, place) => {
     let color = "#6c57f5"
     let fontWeight = 'normal'
 
@@ -33,12 +33,9 @@ export default function ScorePage(props) {
       if(place >= props.cutOff) return <></>
     }
     return <ListItem button dense>
-    <Box width={"200px"}>
+
     <h3 style={{fontWeight: "900", color: nameColor}}>{(user.userName || "") + ": " + (user.score || "0") + " "} </h3>
-    </Box>
-    <Box width={"calc(100% - 200px)"}>
-    <h3 style={{fontWeight: fontWeight, color: color}}>{user.lyrics.join(" ")}</h3>
-    </Box>
+   
     
     </ListItem>
   })

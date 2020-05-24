@@ -28,7 +28,7 @@ class Main extends Component {
           label="Enter your name"
           variant="outlined"
           size="small"
-          value={this.props.name}
+          value={this.props.userName}
           fullWidth
           onChange={this.props.handleChange}
     

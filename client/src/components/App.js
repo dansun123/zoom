@@ -40,7 +40,8 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: "",
+      userName: "",
+      userID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       roomID: "",
       didPlay: false,
     };
@@ -65,13 +66,13 @@ class App extends Component {
   }
 
   handleChange = event => {
-    this.setState({ name: event.target.value });
+    this.setState({ userName: event.target.value });
   };
 
   createRoom = () => {
     this.setState({didPlay: true})
-    if(this.state.name==="") {
-      this.setState({name: "Guest"+makeid(5)})
+    if(this.state.userName==="") {
+      this.setState({userName: "Guest"+makeid(5)})
     }
     post('api/createNewRoom', {}).then((res) => {
       this.setState({
@@ -82,8 +83,8 @@ class App extends Component {
 
   playNow = () => {
     this.setState({didPlay: true})
-    if(this.state.name==="") {
-      this.setState({name: "Guest"+makeid(5)})
+    if(this.state.userName==="") {
+      this.setState({userName: "Guest"+makeid(5)})
     }
     if(this.state.roomID==="") {
       this.setState({roomID: 'main'});
@@ -96,8 +97,9 @@ class App extends Component {
       <>
         {this.state.isLoading ? <h1>Loading...</h1> :
         <Room
-          name = {this.state.name}
+          userName = {this.state.userName}
           roomID = {this.state.roomID}
+          userID = {this.state.userID}
         />
   }
       </>
@@ -108,7 +110,8 @@ class App extends Component {
         <Topbar
         />
         <Main
-          name = {this.state.name}
+          userName = {this.state.userName}
+          userID = {this.state.userID}
           handleChange = {this.handleChange}
           createRoom = {this.createRoom}
           playNow = {this.playNow}
