@@ -22,18 +22,21 @@ class Music extends React.Component {
       this.state.audio.volume = 0.1
       this.state.audio.pause()
       socket.on("startGame", (data) => {
+        if(this.props.roomID !== data.roomID) return;
         this.setState({play: true}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
       })
 
       socket.on("finishGame", (data) => {
+        if(this.props.roomID !== data.roomID) return;
         this.setState({play: false}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
       })
 
       socket.on("results", (data) => {
+        if(this.props.roomID !== data.roomID) return;
         this.setState({play: false}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })

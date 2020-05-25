@@ -115,6 +115,7 @@ class Room extends Component {
                 this.setState({timeToStart: timeToStart})
                 counter += 1
                 if(counter === 6) {
+                 
                     clearInterval(interval)
                 }
             
@@ -163,7 +164,8 @@ class Room extends Component {
                
             this.setState({
                 status: "roundFinished", 
-                answer: data.answer
+                answer: data.answer,
+                timeToStart: 3
             })
 
         })
@@ -292,7 +294,7 @@ class Room extends Component {
                      
 
                     {(window.AudioContext) ? <Box style={{height: (this.state.status === "inProgress" ? "260px" : "0px"), overflow: "scroll"}}>
-                <Music url = {this.state.song.instrumentalUrl} visual={true} pauseButton={false} />
+                <Music url = {this.state.song.instrumentalUrl} visual={true} pauseButton={false} roomID = {this.props.roomID} />
         </Box>:<></>} 
         {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "260px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"260px"} /></Box> : <></>}
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
