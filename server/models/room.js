@@ -7,7 +7,8 @@ const RoomSchema = new mongoose.Schema({
     userName: String,
     score: {type: Number, default: 0}
   }],
-  status: String // either "waiting", "1inProgress", "2inProgress", .., "gameFinished", "roundFinished" 
+  status: String, // either "waiting", "1inProgress", "2inProgress", .., "gameFinished", "roundFinished" 
+  waitingForAnswers: {type: Number, default: 0}
 });
 
 // compile model from schema

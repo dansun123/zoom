@@ -108,11 +108,81 @@ router.post("/joinRoom", (req, res) => {
 });
 
 
+let finishGameMap = {}
+let gameData = {}
 
+let fromNow = (num) => {
+  return new Date((new Date()).getTime() + num)
+}
+
+
+
+let startGame = (roomID) => {
+  // make sure it has not happened yet
+  let obj = gameData[roomID]
+  let roundNum = obj.roundNum 
+  let rounds = obj.rounds 
+  let songs = obj.songs 
+  
+  
+    socket.getIo().emit("startGame", {roomID: roomID, roundNum: roundNum})
+    Room.findOne({roomID: roomID}).then((room) => {
+      room.status = "inProgress"
+      room.save()
+
+      gameData[roomID]["waitingOn"] = room.data.length
+      
+      console.log("waitingOn:" + gameData[roomID].waitingOn + " roundnum" + gameData[roomID].roundNum)
+    })
+
+    setTimeout(() => finishGame(roomID, roundNum), 30000)
+
+ 
+}
+
+
+
+let finishGame = (roomID, possibleRoundNum) => {
+
+  let obj = gameData[roomID]
+  let roundNum = obj.roundNum 
+  if(possibleRoundNum !== -1) roundNum = possibleRoundNum
+  let rounds = obj.rounds 
+  let songs = obj.songs 
+
+  
+
+  if(finishGameMap[roomID][roundNum]) {
+    console.log("You got me!")
+    return 
+  }
+  finishGameMap[roomID][roundNum] = true
+  if(roundNum === rounds) {
+    socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID})
+      Room.findOne({roomID: roomID}).then((room) => {
+        room.status = "roundFinished"
+        room.save()
+      })
+  }
+  else {
+    socket.getIo().emit("finishGame", {answer: songs[roundNum-1], roomID: roomID, song: songs[roundNum],  startTime: fromNow(5000), endTime: fromNow(35000)})
+      Room.findOne({roomID: roomID}).then((room) => {
+        room.status = "gameFinished"
+        room.save()
+      })
+      
+      setTimeout(() => {
+        gameData[roomID]["roundNum"] = gameData[roomID]["roundNum"]+1
+        startGame(roomID)
+      }, 5000)
+  }
+
+
+}
 
 router.post("/startGame", (req, res) => {
   console.log("startGame")
-  var rounds = 6
+  var rounds = 10
   var roundNum = 0;
   var songs = []
   Song.aggregate(
@@ -124,64 +194,38 @@ router.post("/startGame", (req, res) => {
 
           // start the process!!!
           console.log(songs)
-          times = []
+         
           
-          let mostRecentTime = 0
-          let curTime = new Date()
-          let fromNow = (num) => {
-            return new Date((curTime).getTime() + num)
-          }
-          for(roundNum = 0; roundNum < rounds; roundNum += 1) {
-            
-            let mostRecentRoundTimes = {startTime: mostRecentTime + 5000, endTime: mostRecentTime + 35000}
-            times.push(mostRecentRoundTimes)
-            mostRecentTime = mostRecentRoundTimes.endTime
-          }
           
-          for(roundNum = 0; roundNum < rounds; roundNum += 1) {
-            if(roundNum === 0) {
-              let curSong = songs[roundNum]
-              console.log("startin timer")
-              socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: curSong, startTime: fromNow(times[roundNum].startTime), endTime: fromNow(times[roundNum].endTime), roundNum: 1})              
               Room.findOne({roomID: req.body.roomID}).then((room) => {
                 room.status = "inProgress"
                 let data = room.data 
                 let i = 0
                 for(i=0; i<data.length; i++) data[i].score = 0 
                 room.data = data
-                room.save()
-              })
-            }
-            let curRoundNum = roundNum
-            setTimeout(() => {
-              socket.getIo().emit("startGame", {roomID: req.body.roomID, roundNum: curRoundNum  + 1})
-              Room.findOne({roomID: req.body.roomID}).then((room) => {
-                room.status = "inProgress"
-                room.save()
-              })
-            }, times[curRoundNum].startTime)              
-            if(curRoundNum  !== rounds - 1) {
-              let curSong = songs[curRoundNum +1]
-              setTimeout(() => {
-                
-                socket.getIo().emit("finishGame", {answer: songs[curRoundNum], roomID: req.body.roomID, song: curSong,  startTime: fromNow(times[curRoundNum+1].startTime), endTime: fromNow(times[curRoundNum+1].endTime)})
-                Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  room.status = "gameFinished"
-                  room.save()
+               
+                room.save().then(() => {
+                  console.log("startin timer")
+                  socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: songs[0], startTime: fromNow(3000), endTime: fromNow(33000), roundNum: 1})              
+                  finishGameMap[req.body.roomID] = {}
+
+                  setTimeout(() => {
+                    gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs}
+                    startGame(req.body.roomID)
+                  }, 3000)  
+                  res.send({})
                 })
-              }, times[curRoundNum].endTime) 
-            }
-            else {
-              setTimeout(() => {
-                socket.getIo().emit("results", {answer: songs[curRoundNum], roomID: req.body.roomID})
-                Room.findOne({roomID: req.body.roomID}).then((room) => {
-                  room.status = "roundFinished"
-                  room.save()
-                })
-              }, times[curRoundNum].endTime) 
-            }
-      
-          }
+              })
+
+
+
+
+
+
+          
+          
+          
+          
 
 
 
@@ -214,6 +258,14 @@ router.post("/newMessage", (req, res) => {
       systemMessage = true 
       messageText = req.body.userName + " guessed the title!"
       style="Correct Answer"
+
+      let curWaiting = gameData[req.body.roomID]["waitingOn"]
+      let willFinish = (curWaiting === 1)
+      gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
+      if(willFinish) {
+        finishGame(req.body.roomID, -1)
+      }
+
       let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + req.body.points}
       Room.findOne({roomID: req.body.roomID}).then((room) => {
         let data = room.data 

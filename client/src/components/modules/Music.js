@@ -26,6 +26,18 @@ class Music extends React.Component {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
       })
+
+      socket.on("finishGame", (data) => {
+        this.setState({play: false}, () => {
+          this.state.play ? this.state.audio.play() : this.state.audio.pause();
+        })
+      })
+
+      socket.on("results", (data) => {
+        this.setState({play: false}, () => {
+          this.state.play ? this.state.audio.play() : this.state.audio.pause();
+        })
+      })
      // setTimeout(() => this.state.audio.pause(), 30000)
       
     }
