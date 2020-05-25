@@ -6,6 +6,8 @@ const SongSchema = new mongoose.Schema({
   artUrl: String,
   instrumentalUrl: String,
   karaokeUrl: String,
+  songUrl: String,
+  youtubeUrl: String,
 });
 
 // compile model from schema

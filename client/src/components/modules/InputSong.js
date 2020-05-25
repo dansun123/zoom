@@ -28,8 +28,20 @@ class InputSong extends React.Component {
         this.setState({ artist: event.target.value });
     };
 
-    handleChangeAnswerKey = event => {
-        this.setState({ answerKey: event.target.value });
+    handleChangeSong = event => {
+        this.setState({songUrl: event.target.value });
+    };
+
+    handleChangeInstrumental = event => {
+        this.setState({instrumentalUrl: event.target.value });
+    };
+
+    handleChangeKaraoke = event => {
+        this.setState({karaokeUrl: event.target.value });
+    };
+
+    handleChangeYoutube = event => {
+        this.setState({youtubeUrl: event.target.value });
     };
 
     handleFetch = event => {
@@ -37,16 +49,16 @@ class InputSong extends React.Component {
         // this.sendMessage();
         get("/api/songLyrics", {title: this.state.title, artist: this.state.artist}).then((response) => {
             get("/api/songKaraoke", {title: response.title+" "+response.primaryArtist}).then((res) => {
-                if (res.karaokeUrl!=="HI") {
-                    console.log("diff")
-                }
-                this.setState({
-                    title: response.title, 
-                    artist: response.primaryArtist,
-                    // featuredArtists: response.featuredArtists,
-                    artUrl: response.artUrl,
-                    instrumentalUrl: response.url,
-                    karaokeUrl: res.karaokeUrl!=="HI" ? res.karaokeUrl : response.url,
+                get("/api/songUrl", {title: response.title+" "+response.primaryArtist}).then((res1) => {
+                    this.setState({
+                        title: response.title, 
+                        artist: response.primaryArtist,
+                        // featuredArtists: response.featuredArtists,
+                        artUrl: response.artUrl,
+                        songUrl: res1.songUrl,
+                        instrumentalUrl: response.url,
+                        karaokeUrl: res.karaokeUrl!=="HI" ? res.karaokeUrl : response.url,
+                    })
                 })
             })
         })
@@ -60,17 +72,22 @@ class InputSong extends React.Component {
             primaryArtist: this.state.artist,
             // featuredArtists: this.state.featuredArtists,
             artUrl: this.state.artUrl,
+            songUrl: this.state.songUrl,
             instrumentalUrl: this.state.instrumentalUrl,
             karaokeUrl: this.state.karaokeUrl,
+            youtubeUrl: this.state.youtubeUrl,
         }
         post("/api/songLink", body).then(() => {
+            console.log("Logged "+ this.state.title + " "+this.state.youtubeUrl)
             this.setState({ 
                 artist: "", 
                 answerKey: "",
                 // featuredArtists: undefined,
                 artUrl: undefined,
-                instrumentalUrl: undefined,
-                karaokeUrl: undefined,
+                songUrl: "",
+                instrumentalUrl: "",
+                karaokeUrl: "",
+                youtubeUrl: "",
             })
         });
     };
@@ -115,16 +132,41 @@ class InputSong extends React.Component {
             }}> Fetch
             </button>
             {this.state.artUrl ? <img src = {this.state.artUrl} style={{width:"100px", height: "100px"}}/>: null}
+            <TextField
+                label="YoutubeUrl"
+                variant="outlined"
+                size="small"
+                value={this.state.youtubeUrl}
+                fullWidth
+                onChange={this.handleChangeYoutube}
+            />
+            {this.state.songUrl ? <><Music url = {this.state.songUrl} pauseButton={true} /><a href={this.state.songUrl}>URL</a></>: null}
+            <TextField
+                label="SongUrl"
+                variant="outlined"
+                size="small"
+                value={this.state.songUrl}
+                fullWidth
+                onChange={this.handleChangeSong}
+            />
             {this.state.instrumentalUrl ? <><Music url = {this.state.instrumentalUrl} pauseButton={true} /><a href={this.state.instrumentalUrl}>URL</a></>: null}
+            <TextField
+                label="InstrumentalUrl"
+                variant="outlined"
+                size="small"
+                value={this.state.instrumentalUrl}
+                fullWidth
+                onChange={this.handleChangeInstrumental}
+            />
             {this.state.karaokeUrl ? <><Music url = {this.state.karaokeUrl} pauseButton={true} /><a href={this.state.karaokeUrl}>URL</a></>: null}
-            <button onClick = {() => {
-                this.setState({instrumentalUrl: this.state.karaokeUrl})
-            }}> Replace Instrumental
-            </button>
-            <button onClick = {() => {
-                this.setState({karaokeUrl: this.state.instrumentalUrl})
-            }}> Replace Karaoke
-            </button>
+            <TextField
+                label="KaraokeUrl"
+                variant="outlined"
+                size="small"
+                value={this.state.karaokeUrl}
+                fullWidth
+                onChange={this.handleChangeKaraoke}
+            />
             <button onClick = {() => {
                 if(true) {
                     if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {

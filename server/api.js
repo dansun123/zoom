@@ -302,6 +302,22 @@ router.get("/songKaraoke", (req, res) => {
 })
 
 
+router.get("/songUrl", (req, res) => {
+  console.log(req.query.title)
+  request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title)+'&entity=song&limit=1', (error, response, body) => {
+    console.log(response.statusCode)
+    if (!error && response.statusCode == 200 && JSON.parse(body).results[0]) {
+      let karaokeURL = JSON.parse(body).results[0].previewUrl
+      res.send({songUrl: karaokeURL})
+    } else {
+      res.send({
+        songUrl: "HI"
+      })
+    }
+  })
+})
+
+
 router.post("/songLink", (req, res) => {
   console.log("posted "+req.body.title)
   const song = new Song({
@@ -309,8 +325,10 @@ router.post("/songLink", (req, res) => {
     primaryArtist: req.body.primaryArtist,
     // featuredArtists: req.body.featuredArtists,
     artUrl: req.body.artUrl,
+    songUrl: req.body.songUrl,
     instrumentalUrl: req.body.instrumentalUrl,
     karaokeUrl: req.body.karaokeUrl,
+    youtubeUrl: req.body.youtubeUrl,
   })
   song.save();
   res.send({});
