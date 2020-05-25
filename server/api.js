@@ -286,6 +286,77 @@ router.post("/newMessage", (req, res) => {
   res.send({});
 });
 
+router.get("/songLyrics", (req, res) => {
+  console.log(req.query.title)
+  request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title+" instrumental")+'&entity=song&limit=1', (error, response, body) => {
+    // request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title+" karaoke")+'&entity=song&limit=1', (error1, response2, body1) => {
+      console.log(response.statusCode)
+      if (!error && response.statusCode == 200 && JSON.parse(body).results[0]) {
+        let songURL = JSON.parse(body).results[0].previewUrl
+        let karaokeURL = songURL
+        // console.log(response2.statusCode)
+        // if(!error1 && response2.statusCode == 200 && JSON.parse(body1).results[0]) {
+        //   console.log("maybe changed")
+        //   karaokeURL = JSON.parse(body1).results[0].previewUrl
+        // }
+        genius.search(req.query.title).then(function(response1) {
+          genius.song(response1.hits[0].result.id).then(function(response) {
+            console.log('song', response.song); 
+            let title = String(response.song.title);
+            let primaryArtist =  response.song.primary_artist.name;
+            // let featuredArtists = "Daniel";
+            let artUrl = response.song.song_art_image_url;
+            res.send({
+              title: title,
+              primaryArtist: primaryArtist,
+              artUrl: artUrl,
+              url: songURL,
+              karaokeUrl: karaokeURL
+            })
+          });
+        });
+      } else {
+        res.send({
+          title: "RIP",
+          primaryArtist: "RIP",
+          artUrl: "hi",
+          url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview117/v4/c6/62/9d/c6629d72-2585-0543-bd72-bf3c1e53f58e/mzaf_8154972110049456890.plus.aac.p.m4a",
+        })
+      }
+    // })
+  })
+})
+
+router.get("/songKaraoke", (req, res) => {
+  console.log(req.query.title)
+  request('https://itunes.apple.com/search?term='+utf8.encode(req.query.title+" karaoke")+'&entity=song&limit=1', (error, response, body) => {
+    console.log(response.statusCode)
+    if (!error && response.statusCode == 200 && JSON.parse(body).results[0]) {
+      let karaokeURL = JSON.parse(body).results[0].previewUrl
+      res.send({karaokeUrl: karaokeURL})
+    } else {
+      res.send({
+        karaokeUrl: "HI"
+      })
+    }
+  })
+})
+
+
+router.post("/songLink", (req, res) => {
+  console.log("posted "+req.body.title)
+  const song = new Song({
+    title: req.body.title,
+    primaryArtist: req.body.primaryArtist,
+    // featuredArtists: req.body.featuredArtists,
+    artUrl: req.body.artUrl,
+    instrumentalUrl: req.body.instrumentalUrl,
+    karaokeUrl: req.body.karaokeUrl,
+  })
+  song.save();
+  res.send({});
+})
+
 
 
 // router.post("/getInstrumentals", (req,res) => {
@@ -296,20 +367,25 @@ router.post("/newMessage", (req, res) => {
 //   Song.find({}).then((songs) => {
 //     songs.forEach((song) => {
 //       request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist + " instrumental")+'&entity=song&limit=1', (error, response, body) => {
-//         if (!error && response.statusCode == 200 && JSON.parse(body).results[0]) {
-//           let songUrl = JSON.parse(body).results[0].previewUrl
-//           obj.table.push({
-//             title: song.title,
-//             primaryArtist: song.primaryArtist,
-//             artUrl: song.artUrl,
-//             songUrl: songUrl,
-//           })
-//         }
-//         numAdded+=1;
-//         if(numAdded === songs.length) {
-//           var json = JSON.stringify(obj)
-//           fs.writeFile('myjsonfile.json', json, 'utf8', ()=>{console.log("success")})
-//         }
+//         request('https://itunes.apple.com/search?term='+utf8.encode(song.title + " " + song.primaryArtist + " karaoke")+'&entity=song&limit=1', (error1, response1, body1) => {
+//           if (!error && response.statusCode == 200 && JSON.parse(body).results[0] && !error1 && response1.statusCode == 200 && JSON.parse(body1).results[0]) {
+//             let instrumentalUrl = JSON.parse(body).results[0].previewUrl
+//             let karaokeUrl = JSON.parse(body1).results[0].previewUrl
+//             obj.table.push({
+//               title: song.title,
+//               primaryArtist: song.primaryArtist,
+//               artUrl: song.artUrl,
+//               instrumentalUrl: instrumentalUrl,
+//               karaokeUrl: karaokeUrl
+//             })
+//           }
+//           numAdded+=1;
+//           console.log(obj.table.length)
+//           if(obj.table.length === 100) {
+//             var json = JSON.stringify(obj)
+//             fs.writeFile('myjsonfile.json', json, 'utf8', ()=>{console.log("success")})
+//           }
+//         })
 //       })
 //     })
 //   })
