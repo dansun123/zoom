@@ -204,6 +204,7 @@ router.post("/startGame", (req, res) => {
                     gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, numPeople: numPeople}
                     startGame(req.body.roomID)
                   }, 3000)  
+                  res.send({})
                 })
               })
 
