@@ -173,7 +173,7 @@ let finishGame = (roomID) => {
 
 router.post("/startGame", (req, res) => {
   console.log("startGame")
-  var rounds = 2
+  var rounds = 10
   var roundNum = 0;
   var songs = []
   Song.aggregate(
@@ -197,13 +197,13 @@ router.post("/startGame", (req, res) => {
                 let numPeople = data.length 
                 room.save().then(() => {
                   console.log("startin timer")
-                  socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: songs[0], startTime: fromNow(5000), endTime: fromNow(35000), roundNum: 1})              
+                  socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: songs[0], startTime: fromNow(3000), endTime: fromNow(33000), roundNum: 1})              
                   finishGameMap[req.body.roomID] = {}
 
                   setTimeout(() => {
                     gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, numPeople: numPeople}
                     startGame(req.body.roomID)
-                  }, 5000)  
+                  }, 3000)  
                 })
               })
 
