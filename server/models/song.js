@@ -4,7 +4,8 @@ const SongSchema = new mongoose.Schema({
   title: String,
   primaryArtist: String,
   artUrl: String,
-  songUrl: String,
+  instrumentalUrl: String,
+  karaokeUrl: String,
 });
 
 // compile model from schema

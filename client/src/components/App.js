@@ -117,13 +117,23 @@ class App extends Component {
       <>
         <Topbar
         />
-        <Main
-          userName = {this.state.userName}
-          userID = {this.state.userID}
-          handleChange = {this.handleChange}
-          createRoom = {this.createRoom}
-          playNow = {this.playNow}
-        />
+        <Router>
+          <div>
+            <Switch>
+              <InputSong
+                exact path = "/input"
+              />
+              <Main
+                userName = {this.state.userName}
+                userID = {this.state.userID}
+                handleChange = {this.handleChange}
+                createRoom = {this.createRoom}
+                playNow = {this.playNow}
+                default
+              />
+            </Switch>
+          </div>
+        </Router>
       </>
     )
     
