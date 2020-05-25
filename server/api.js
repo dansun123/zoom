@@ -266,7 +266,7 @@ router.post("/newMessage", (req, res) => {
         finishGame(req.body.roomID, -1)
       }
 
-      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + req.body.points}
+      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + 10 + (req.body.points>=20 ? req.body.points-20: 0)+ req.body.points}
       Room.findOne({roomID: req.body.roomID}).then((room) => {
         let data = room.data 
         data = data.filter((entry) => {

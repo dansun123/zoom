@@ -244,6 +244,7 @@ class Room extends Component {
             <>
             {(this.state.answer) ? 
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
+            
             : <></>}
             <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
             
@@ -292,7 +293,7 @@ class Room extends Component {
 
                     {window.AudioContext ? <Box style={{height: "260px", overflow: scroll}}>
                 <Music url = {this.state.song.instrumentalUrl} visual={true} pauseButton={false}></Music>
-            </Box> : <></>}
+            </Box> : <Box style={{height: "260px", overflow: scroll}}><img src = {this.state.song.artUrl}/></Box> }
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
             <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
                     Invite Link: {url}
