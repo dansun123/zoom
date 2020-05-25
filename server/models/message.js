@@ -6,7 +6,9 @@ const MessageSchema = new mongoose.Schema({
   roomID: String, 
   timestamp: { type: Date, default: Date.now },
   message: String,
-  systemMessage: {type: Boolean, default: false}
+  systemMessage: {type: Boolean, default: false},
+  style: {type: String, default: "message"}
+
 });
 
 // compile model from schema
