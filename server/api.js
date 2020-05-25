@@ -131,23 +131,31 @@ let startGame = (roomID) => {
       room.save()
 
       gameData[roomID]["waitingOn"] = room.data.length
+      
+      console.log("waitingOn:" + gameData[roomID].waitingOn + " roundnum" + gameData[roomID].roundNum)
     })
 
-    setTimeout(() => finishGame(roomID), 30000)
+    setTimeout(() => finishGame(roomID, roundNum), 30000)
 
  
 }
 
 
 
-let finishGame = (roomID) => {
+let finishGame = (roomID, possibleRoundNum) => {
+
   let obj = gameData[roomID]
   let roundNum = obj.roundNum 
+  if(possibleRoundNum !== -1) roundNum = possibleRoundNum
   let rounds = obj.rounds 
   let songs = obj.songs 
 
-
-  if(finishGameMap[roomID][roundNum]) return 
+  
+  console.log(finishGameMap)
+  if(finishGameMap[roomID][roundNum]) {
+    console.log("You got me!")
+    return 
+  }
   finishGameMap[roomID][roundNum] = true
   if(roundNum === rounds) {
     socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID})
@@ -255,7 +263,7 @@ router.post("/newMessage", (req, res) => {
       let willFinish = (curWaiting === 1)
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
       if(willFinish) {
-        finishGame(req.body.roomID)
+        finishGame(req.body.roomID, -1)
       }
 
       let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + req.body.points}
