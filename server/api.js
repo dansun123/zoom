@@ -151,7 +151,7 @@ let finishGame = (roomID, possibleRoundNum) => {
   let songs = obj.songs 
 
   
-  console.log(finishGameMap)
+
   if(finishGameMap[roomID][roundNum]) {
     console.log("You got me!")
     return 
