@@ -11,7 +11,7 @@ class Music extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            play: true,
+            play: false,
             audio: new Audio()
         }
         this.state.audio.crossOrigin = "anonymous";
