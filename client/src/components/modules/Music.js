@@ -23,18 +23,21 @@ class Music extends React.Component {
       this.state.audio.volume = 0.1
       this.state.audio.pause()
       socket.on("startGame", (data) => {
+        if(this.props.roomID !== data.roomID) return;
         this.setState({play: true}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
       })
 
       socket.on("finishGame", (data) => {
+        if(this.props.roomID !== data.roomID) return;
         this.setState({play: false}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
       })
 
       socket.on("results", (data) => {
+        if(this.props.roomID !== data.roomID) return;
         this.setState({play: false}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
@@ -68,7 +71,7 @@ class Music extends React.Component {
           <Box height={"130px"}></Box>
           
           {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100px"}}/>}
-          {this.props.pauseButton ? <ReactPlayer url={this.props.url} playing={false} controls/> : <ReactPlayer url={this.props.url} playing width={'0%'} height={'0%'}/>}
+          {this.props.pauseButton ? <ReactPlayer url={this.props.url} playing={this.state.play} controls/> : <ReactPlayer url={this.props.url} playing={this.state.play} width={'0%'} height={'0%'}/>}
           {/* <div>post</div> */}
           {/* {this.props.pauseButton ? <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> : ""} */}
 

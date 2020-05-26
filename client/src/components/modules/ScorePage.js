@@ -35,7 +35,7 @@ export default function ScorePage(props) {
     </ListItem>
   })
 
-  let height = "370px";
+  let height = "480px";
   return (
     <Box  style={{overflow: "scroll", height: height}} >
         <List>

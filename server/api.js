@@ -219,18 +219,6 @@ router.post("/startGame", (req, res) => {
 
 
 
-
-
-
-          
-          
-          
-          
-
-
-
-
-
       }
     })
   })
