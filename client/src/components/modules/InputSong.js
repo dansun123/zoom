@@ -44,6 +44,10 @@ class InputSong extends React.Component {
         this.setState({youtubeUrl: event.target.value });
     };
 
+    handleChangeSoundcloud = event => {
+        this.setState({soundcloudUrl: event.target.value });
+    };
+
     handleFetch = event => {
         event.preventDefault();
         // this.sendMessage();
@@ -76,8 +80,9 @@ class InputSong extends React.Component {
             instrumentalUrl: this.state.instrumentalUrl,
             karaokeUrl: this.state.karaokeUrl,
             youtubeUrl: this.state.youtubeUrl,
+            soundcloudUrl: this.state.soundcloudUrl,
         }
-        post("/api/songLink", body).then(() => {
+        post("/api/songModify", body).then(() => {
             console.log("Logged "+ this.state.title + " "+this.state.youtubeUrl)
             this.setState({ 
                 artist: "", 
@@ -88,6 +93,7 @@ class InputSong extends React.Component {
                 instrumentalUrl: "",
                 karaokeUrl: "",
                 youtubeUrl: "",
+                soundcloudUrl: "",
             })
         });
     };
@@ -132,7 +138,16 @@ class InputSong extends React.Component {
             }}> Fetch
             </button>
             {this.state.artUrl ? <img src = {this.state.artUrl} style={{width:"100px", height: "100px"}}/>: null}
-            {this.state.youtubeUrl ? <><Music url = {this.state.youtubeUrl} pauseButton={true} /><a href={this.state.songUrl}>URL</a></>: null}
+            {this.state.soundcloudUrl ? <><Music url = {this.state.soundcloudUrl} pauseButton={true} /><a href={this.state.soundcloudUrl}>URL</a></>: null}
+            <TextField
+                label="SoundcloudUrl"
+                variant="outlined"
+                size="small"
+                value={this.state.soundcloudUrl}
+                fullWidth
+                onChange={this.handleChangeSoundcloud}
+            />
+            {this.state.youtubeUrl ? <><Music url = {this.state.youtubeUrl} pauseButton={true} /><a href={this.state.youtubeUrl}>URL</a></>: null}
             <TextField
                 label="YoutubeUrl"
                 variant="outlined"
@@ -141,7 +156,7 @@ class InputSong extends React.Component {
                 fullWidth
                 onChange={this.handleChangeYoutube}
             />
-            {this.state.songUrl ? <><Music url = {this.state.songUrl} pauseButton={true} /><a href={this.state.songUrl}>URL</a></>: null}
+            {/* {this.state.songUrl ? <><Music url = {this.state.songUrl} pauseButton={true} /><a href={this.state.songUrl}>URL</a></>: null}
             <TextField
                 label="SongUrl"
                 variant="outlined"
@@ -167,7 +182,7 @@ class InputSong extends React.Component {
                 value={this.state.karaokeUrl}
                 fullWidth
                 onChange={this.handleChangeKaraoke}
-            />
+            /> */}
             <button onClick = {() => {
                 if(true) {
                     if((new Date()).getTime() - ((new Date(this.state.lastMessage)).getTime()) >= 500) {

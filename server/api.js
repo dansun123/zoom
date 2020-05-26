@@ -369,12 +369,21 @@ router.post("/songLink", (req, res) => {
     instrumentalUrl: req.body.instrumentalUrl,
     karaokeUrl: req.body.karaokeUrl,
     youtubeUrl: req.body.youtubeUrl,
+    soundcloudUrl: req.body.soundcloudUrl,
   })
   song.save();
   res.send({});
 })
 
-
+router.post("/songModify", (req, res) => {
+  console.log("posted "+req.body.title)
+  Song.findOne({title: req.body.title, primaryArtist:req.body.primaryArtist}).then((song) => {
+    song.youtubeUrl = req.body.youtubeUrl
+    song.soundcloudUrl = req.body.soundcloudUrl
+    song.save();
+  })
+  res.send({});
+})
 
 // router.post("/getInstrumentals", (req,res) => {
 //   let obj = {
