@@ -130,7 +130,10 @@ let startGame = (roomID) => {
       room.status = "inProgress"
       room.save()
 
-      gameData[roomID]["waitingOn"] = room.data.length
+     
+      let total =  room.data.length
+      let waitingOn = Math.ceil(1.0*total/2.0 - 0.001)
+      gameData[roomID]["waitingOn"] = waitingOn
       
       console.log("waitingOn:" + gameData[roomID].waitingOn + " roundnum" + gameData[roomID].roundNum)
     })
@@ -253,8 +256,9 @@ router.post("/newMessage", (req, res) => {
       if(willFinish) {
         finishGame(req.body.roomID, -1)
       }
-
-      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + 10 + (req.body.points>=20 ? req.body.points-20: 0)+ req.body.points}
+      let points = Math.floor(Math.floor((req.body.points>=20 ? req.body.points-20: 0)+ req.body.points) + curWaiting*5 + 5)
+      
+      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points}
       Room.findOne({roomID: req.body.roomID}).then((room) => {
         let data = room.data 
         data = data.filter((entry) => {
@@ -264,7 +268,7 @@ router.post("/newMessage", (req, res) => {
         room.data = data 
         room.save()
       })
-      socket.getIo().emit("updateRoomData", {userID: req.body.userID, roomID: req.body.roomID, entry: newEntry})
+      socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - req.body.points).toFixed(3), points: points})
     }
   }
 

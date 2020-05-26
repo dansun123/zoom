@@ -1,6 +1,7 @@
 import React, { Component, useState } from "react";
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
+import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -35,7 +36,46 @@ export default function ScorePage(props) {
     </ListItem>
   })
 
+  
+  
+
   let height = "480px";
+
+  if(props.roomAnswers) {
+    let roomAnswerElements = props.roomAnswers.map((roomAnswer, place) => {
+      let nameColor = "#2196f3"
+  
+      if(roomAnswer.userID === props.userID) {
+        nameColor = "#f50057"
+      }
+      let color = nameColor
+      if(place === 0) color = "#3bb033"
+      return (
+      <ListItem button dense>
+        
+      <h3 style={{fontWeight: "900", color: color}}>{roomAnswer.time + " sec: " + roomAnswer.userName + " (+" + (roomAnswer.points)  + ")"} </h3>
+     
+      
+      </ListItem>)
+    })
+
+    return (
+    <Grid container direction="row" width={1}>
+    <Box  style={{overflow: "scroll", height: height}} width={3/11} >
+        <List>
+          {scoreListElements}
+        </List>
+    </Box>
+    {props.roomAnswers.length > 0 ? <Divider orientation="vertical" flexItem /> : <></>}
+    <Box  style={{overflow: "scroll", height: height}} width={7/11} >
+        <List>
+          {roomAnswerElements}
+        </List>
+    </Box>
+    </Grid>)
+  
+  }
+
   return (
     <Box  style={{overflow: "scroll", height: height}} >
         <List>
