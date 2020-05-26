@@ -54,7 +54,7 @@ class Room extends Component {
             redirect: false,
             refresh: false,
             copied: false,
-            
+            roomAnswers: []
         }
     }
     componentDidMount() {
@@ -89,7 +89,13 @@ class Room extends Component {
             let arr = this.state.roomData
             arr = arr.filter((obj) => {return obj.userID !== update.entry.userID})
             arr.push(update.entry)
-            this.setState({roomData: arr})
+
+            let arr2 = this.state.roomAnswers;
+            arr2.push({time: update.time, points: update.points, userID: update.entry.userID, userName: update.entry.userName})
+
+
+
+            this.setState({roomData: arr, roomAnswers: arr2})
             if(update.entry.userID === this.props.userID) this.setState({score: update.entry.score, answered: true})
         })
 
@@ -104,6 +110,7 @@ class Room extends Component {
                 endTime: data.endTime, 
                 startTime: data.startTime, 
                 roomData: newdata,
+                roomAnswers: [],
                 song: data.song,
                 score: 0,
                 roundNum: data.roundNum
@@ -125,7 +132,7 @@ class Room extends Component {
 
         socket.on("startGame", (data) => {
             if(this.props.roomID !== data.roomID) return;
-            this.setState({roundNum: data.roundNum, status: "inProgress", answered: false})
+            this.setState({roundNum: data.roundNum, status: "inProgress", answered: false, roomAnswers: []})
           
 
         })
@@ -237,7 +244,7 @@ class Room extends Component {
             <>
             
             <Timer endTime={this.state.endTime} />
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
             </>
 
         }
@@ -248,7 +255,7 @@ class Room extends Component {
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
             
             : <></>}
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
             
             <h3 style={{display: "flex", justifyContent: "center"}}>Next Round in {this.state.timeToStart} seconds</h3>
            
@@ -259,7 +266,7 @@ class Room extends Component {
             <>
 
             <h2 style={{display: "flex", justifyContent: "center"}}>Final Results</h2>
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
             {(this.state.answer) ? 
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
             : <></>}            
