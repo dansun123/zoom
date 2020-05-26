@@ -132,6 +132,7 @@ class InputSong extends React.Component {
             }}> Fetch
             </button>
             {this.state.artUrl ? <img src = {this.state.artUrl} style={{width:"100px", height: "100px"}}/>: null}
+            {this.state.youtubeUrl ? <><Music url = {this.state.youtubeUrl} pauseButton={true} /><a href={this.state.songUrl}>URL</a></>: null}
             <TextField
                 label="YoutubeUrl"
                 variant="outlined"

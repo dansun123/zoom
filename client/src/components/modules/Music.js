@@ -4,6 +4,7 @@ import AudioDataContainer from "./AudioDataContainer"
 import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
 import waves from "../images/RadioWaves.png";
+import ReactPlayer from 'react-player'
 
 import { socket } from "../../client-socket.js";
 class Music extends React.Component {
@@ -66,9 +67,10 @@ class Music extends React.Component {
           
           <Box height={"130px"}></Box>
           
-          {/* {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100px"}}/>} */}
+          {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100px"}}/>}
+          {this.props.pauseButton ? <ReactPlayer url={this.props.url} playing={false} controls/> : <ReactPlayer url={this.props.url} playing width={'0%'} height={'0%'}/>}
           {/* <div>post</div> */}
-          {this.props.pauseButton ? <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> : ""}
+          {/* {this.props.pauseButton ? <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> : ""} */}
 
           {/* <a href = {this.props.url}>SONGURL</a> */}
           </Grid>

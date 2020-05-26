@@ -25,7 +25,6 @@ class Main extends Component {
     return (
       <>
         <TextField
-          
           label="Enter your name"
           variant="outlined"
           size="small"
