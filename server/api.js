@@ -123,7 +123,7 @@ let startGame = (roomID) => {
   let roundNum = obj.roundNum 
   let rounds = obj.rounds 
   let songs = obj.songs 
-  
+  let gameID = obj.gameID
   
     socket.getIo().emit("startGame", {roomID: roomID, roundNum: roundNum})
     Room.findOne({roomID: roomID}).then((room) => {
@@ -138,14 +138,14 @@ let startGame = (roomID) => {
       console.log("waitingOn:" + gameData[roomID].waitingOn + " roundnum" + gameData[roomID].roundNum)
     })
 
-    setTimeout(() => finishGame(roomID, roundNum), 30000)
+    setTimeout(() => finishGame(roomID, roundNum, gameID), 30000)
 
  
 }
 
 
 
-let finishGame = (roomID, possibleRoundNum) => {
+let finishGame = (roomID, possibleRoundNum, gameID) => {
 
   let obj = gameData[roomID]
   let roundNum = obj.roundNum 
@@ -157,6 +157,10 @@ let finishGame = (roomID, possibleRoundNum) => {
 
   if(finishGameMap[roomID][roundNum]) {
     console.log("You got me!")
+    return 
+  }
+  if((gameID !== obj.gameID)) {
+    console.log("You got me! gameID doesnt match D:")
     return 
   }
   finishGameMap[roomID][roundNum] = true
@@ -213,7 +217,7 @@ router.post("/startGame", (req, res) => {
                   finishGameMap[req.body.roomID] = {}
 
                   setTimeout(() => {
-                    gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs}
+                    gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15)}
                     startGame(req.body.roomID)
                   }, 3000)  
                   res.send({})
@@ -245,16 +249,19 @@ router.post("/newMessage", (req, res) => {
   let messageText = req.body.message
   if(req.body.systemMessage) systemMessage = true
   else {
-    if(req.body.inGame && similarity(messageText, req.body.title) > 0.7) {
+    let curWaiting = gameData[req.body.roomID]["waitingOn"]
+    if((curWaiting >= 1) && req.body.inGame && (similarity(messageText, req.body.title) > 0.7)) {
+      
+
+     
+      let willFinish = (curWaiting === 1)
+      
       systemMessage = true 
       messageText = req.body.userName + " guessed the title!"
       style="Correct Answer"
-
-      let curWaiting = gameData[req.body.roomID]["waitingOn"]
-      let willFinish = (curWaiting === 1)
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
       if(willFinish) {
-        finishGame(req.body.roomID, -1)
+        finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
       }
       let points = Math.floor(Math.floor((req.body.points>=20 ? req.body.points-20: 0)+ req.body.points) + curWaiting*5 + 5)
       
