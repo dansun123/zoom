@@ -83,7 +83,10 @@ class App extends Component {
     }
     let randomRoomID = Math.random().toString(36).substring(2, 15)
     post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
-      this.setState({roomID: randomRoomID, didPlay: true});
+
+      this.setState({roomID: randomRoomID, didPlay: true}, () => {
+       // window.location.href = ('/'+randomRoomID);
+      });
     })
   }
 
@@ -93,12 +96,15 @@ class App extends Component {
     }
     if(this.state.roomID === "") {
     post('api/createNewRoom', {roomID: "main"}).then((res) => {
-      this.setState({roomID: "main", didPlay: true});
+      this.setState({roomID: "main", didPlay: true}, () => {
+       // window.location.href = '/main'
+      });
     })
     }
     else {
       this.setState({didPlay: true});
     }
+
   };
 
   render() {
@@ -133,6 +139,7 @@ class App extends Component {
                 handleChange = {this.handleChange}
                 createRoom = {this.createRoom}
                 playNow = {this.playNow}
+                roomID = {this.state.roomID}
                 default
               />
             </Switch>

@@ -38,7 +38,7 @@ class Main extends Component {
             }
         }} />
         <Button onClick = {()=>{this.props.createRoom()}}>Create Room</Button>
-        <Button onClick = {()=>{this.props.playNow()}}>Play Now</Button>
+        <Button onClick = {()=>{this.props.playNow()}}>{this.props.roomID === "" ? "Play Now" : ("Join Room " + this.props.roomID)}</Button>
        
       </>
     );
