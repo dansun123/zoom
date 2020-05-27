@@ -389,9 +389,29 @@ router.post("/songLink", (req, res) => {
 router.post("/songModify", (req, res) => {
   console.log("posted "+req.body.title)
   Song.findOne({title: req.body.title, primaryArtist:req.body.primaryArtist}).then((song) => {
-    song.youtubeUrl = req.body.youtubeUrl
-    song.soundcloudUrl = req.body.soundcloudUrl
-    song.save();
+    if(song) {
+      song.title = req.body.title
+      song.primaryArtist = req.body.primaryArtist
+      song.songUrl = req.body.songUrl
+      song.instrumentalUrl = req.body.instrumentalUrl
+      song.karaokeUrl = req.body.karaokeUrl
+      song.youtubeUrl = req.body.youtubeUrl
+      song.soundcloudUrl = req.body.soundcloudUrl
+      song.save();
+    } else {
+      const song1 = new Song({
+        title: req.body.title,
+        primaryArtist: req.body.primaryArtist,
+        // featuredArtists: req.body.featuredArtists,
+        artUrl: req.body.artUrl,
+        songUrl: req.body.songUrl,
+        instrumentalUrl: req.body.instrumentalUrl,
+        karaokeUrl: req.body.karaokeUrl,
+        youtubeUrl: req.body.youtubeUrl,
+        soundcloudUrl: req.body.soundcloudUrl,
+      })
+      song1.save();
+    }
   })
   res.send({});
 })

@@ -82,7 +82,7 @@ class InputSong extends React.Component {
             youtubeUrl: this.state.youtubeUrl,
             soundcloudUrl: this.state.soundcloudUrl,
         }
-        post("/api/songLink", body).then(() => {
+        post("/api/songMModify", body).then(() => {
             console.log("Logged "+ this.state.title + " "+this.state.youtubeUrl)
             this.setState({ 
                 artist: "", 
