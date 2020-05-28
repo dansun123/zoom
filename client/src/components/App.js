@@ -151,7 +151,7 @@ class App extends Component {
 
     return (
       <>
-        <button onClick = {()=>{get('/api/printall', {title: "Best Song Ever"})}}>log app state</button>
+        {/* <button onClick = {()=>{get('/api/printall', {title: "Best Song Ever"})}}>log app state</button> */}
         {this.state.didPlay ? gameContent : generalContent}
       </>
     );
