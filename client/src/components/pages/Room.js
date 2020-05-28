@@ -44,7 +44,7 @@ class Room extends Component {
         this.state = {
             status: "waitingToFinish",
             score: 0,
-      
+  
             isLoading: true,
             endTime: new Date(),
             answered: false,
@@ -168,7 +168,6 @@ class Room extends Component {
                 startTime: data.startTime, 
                 song: data.song,
                 answer: data.answer,
-   
                 timeToStart: 5
                 
             })
@@ -327,7 +326,7 @@ class Room extends Component {
                      
 
                     {(window.AudioContext) ? <Box style={{height: (this.state.status === "inProgress" ? "260px" : "0px"), overflow: "scroll"}}>
-                <Music url = {this.state.song.instrumentalUrl ? this.state.song.instrumentalUrl: this.state.song.songUrl} visual={true} pauseButton={false} roomID = {this.props.roomID} />
+                <Music url = {this.state.song.instrumentalUrl ? this.state.song.instrumentalUrl: this.state.song.songUrl} visual={true} pauseButton={false} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
         </Box>:<></>} 
         {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "260px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"260px"} /></Box> : <></>}
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />

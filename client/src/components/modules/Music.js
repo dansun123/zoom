@@ -11,7 +11,7 @@ class Music extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            play: false,
+            play: this.props.autoplayMusic,
             audio: new Audio()
         }
         this.state.audio.crossOrigin = "anonymous";
@@ -21,7 +21,7 @@ class Music extends React.Component {
     componentDidMount() {
       this.state.audio.addEventListener('ended', () => this.setState({ play: false }));
       this.state.audio.volume = 0.1
-      this.state.audio.pause()
+      this.props.autoplayMusic ? this.state.audio.play() : this.state.audio.pause()
       socket.on("startGame", (data) => {
         if(this.props.roomID !== data.roomID) return;
         this.setState({play: true}, () => {

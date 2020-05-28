@@ -176,7 +176,7 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
   }
   finishGameMap[roomID][roundNum] = true
   if(roundNum === rounds) {
-    inProgressMap[req.body.roomID] = false 
+    inProgressMap[roomID] = false 
     socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID})
       Room.findOne({roomID: roomID}).then((room) => {
         room.status = "roundFinished"
