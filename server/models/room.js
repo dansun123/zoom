@@ -10,7 +10,8 @@ const RoomSchema = new mongoose.Schema({
   waitingForAnswers: {type: Number, default: 0},
   startTime: {type: Date, default: Date.now},
   endTime: {type: Date, default: Date.now},
-  song: Object
+  song: Object,
+  roundNum: {type: Number, default: 1}
 
 
 });

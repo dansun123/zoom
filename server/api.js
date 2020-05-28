@@ -59,7 +59,15 @@ router.post("/initsocket", (req, res) => {
 
 
 
-
+router.post("/badSong", (req, res) => {
+  // do nothing if user not logged in
+  Song.findOne({title: req.body.song.title}).then((song) => {
+    if(song) {
+      song.bad = true;
+      song.save()
+    }
+  })
+});
 router.post("/createNewRoom", (req, res) => {
 
   Room.findOne({roomID: req.body.roomID}).then((room) => {
@@ -108,7 +116,7 @@ router.post("/joinRoom", (req, res) => {
       data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score})
       room.data = data
       room.save().then(() => {
-        res.send({exists: true, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
+        res.send({exists: true, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
       })
     }
     else {
@@ -139,6 +147,7 @@ let startGame = (roomID) => {
     socket.getIo().emit("startGame", {roomID: roomID, roundNum: roundNum})
     Room.findOne({roomID: roomID}).then((room) => {
       room.status = "inProgress"
+      room.roundNum = roundNum
       room.save()
 
      
@@ -232,15 +241,16 @@ router.post("/startGame", (req, res) => {
                 room.endTime = fromNow(33000)
                 room.song = songs[0]
                 room.data = data
+                room.roundNum = 1
                 room.markModified("song")
                
                 room.save().then(() => {
                   console.log("startin timer")
                   socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: songs[0], startTime: fromNow(3000), endTime: fromNow(33000), roundNum: 1})              
                   finishGameMap[req.body.roomID] = {}
-
+                  gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15)}
                   setTimeout(() => {
-                    gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15)}
+                    
                     Room.findOne({roomID: req.body.roomID}).then((room) => {
                       room.status = "inProgress"
                       room.save().then(() => {

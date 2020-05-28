@@ -64,14 +64,15 @@ class Room extends Component {
             redirect: false,
             refresh: false,
             copied: false,
-            roomAnswers: []
+            roomAnswers: [],
+            roundNum: 1,
         }
     }
     componentDidMount() {
         if(this.props.socketid !== "") {
         post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0}).then((data) => {
             if(data.exists)
-                 this.setState({roomID: data.roomID, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                 this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
             else {
                 this.setState({isLoading: false, status: "doesNotExist"})
             }
@@ -82,7 +83,7 @@ class Room extends Component {
             console.log("After " + attemptNumber + " attempts, you reconnected")
             post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: this.state.score}).then((data) => {
                 if(data.exists)
-                     this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                     this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
                 else {
                     this.setState({isLoading: false, status: "doesNotExist"})
                 }
@@ -268,7 +269,9 @@ class Room extends Component {
             body = 
             <>
             
+
             <Timer endTime={this.state.endTime} />
+            
             <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
             </>
 
@@ -341,9 +344,13 @@ class Room extends Component {
                             : <Button fullWidth className = "button2">Copied to clipboard!</Button>
                         }
                     </CopyToClipboard>
-                    <br></br>
-                    <br></br>
-                    <br></br>
+                    <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 10"}</h2>
+                    <Button fullWidth onClick={() => {
+                        let badsong = this.state.status === "inProgress" ? this.state.song : this.state.answer
+                        console.log("Bad song: ")
+                        console.log(badsong)
+                        post("/api/badSong", {song: badsong})
+                    }}>Mark Song as Bad</Button>
                     <div className="margins">
                         <Link className = "margins" target="_blank" href = "https://docs.google.com/forms/d/e/1FAIpQLSc0DR9zF_wR7mPAwPWjyp2DdygBftxvKATUPZsjGBBKRiCYcg/viewform?usp=sf_link">Submit Song Requests</Link>
                     </div>
