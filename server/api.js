@@ -416,6 +416,15 @@ router.post("/songModify", (req, res) => {
   res.send({});
 })
 
+router.get("/printall", (req,res) => {
+  Song.find({}).then((songs) => {
+    songs.forEach((song) => {
+      console.log(song.title)
+    })
+  })
+  res.send({});
+})
+
 // router.post("/getInstrumentals", (req,res) => {
 //   let obj = {
 //     table: []

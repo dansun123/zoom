@@ -15,6 +15,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Dialog from "@material-ui/core/Dialog";
 import List from "@material-ui/core/List";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { Link } from '@material-ui/core';
 
 import Box from "@material-ui/core/Box";
 import Slide from '@material-ui/core/Slide';
@@ -305,7 +306,7 @@ class Room extends Component {
         </Box>:<></>} 
         {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "260px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"260px"} /></Box> : <></>}
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
-            <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
+                <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
                     Invite Link: {url}
                    
                  </h3>
@@ -316,6 +317,12 @@ class Room extends Component {
                             : <Button fullWidth className = "button2">Copied to clipboard!</Button>
                         }
                     </CopyToClipboard>
+                    <br></br>
+                    <br></br>
+                    <br></br>
+                    <div className="margins">
+                        <Link className = "margins" target="_blank" href = "https://docs.google.com/forms/d/e/1FAIpQLSc0DR9zF_wR7mPAwPWjyp2DdygBftxvKATUPZsjGBBKRiCYcg/viewform?usp=sf_link">Submit Song Requests</Link>
+                    </div>
                 </Box>
                 </Grid>
                 
