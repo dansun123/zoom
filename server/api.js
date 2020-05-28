@@ -387,6 +387,10 @@ router.post("/songLink", (req, res) => {
 })
 
 router.post("/songModify", (req, res) => {
+  if(process.env.PORT !== 3000) {
+    res.send({})
+    break
+  }
   console.log("posted "+req.body.title)
   Song.findOne({title: req.body.title, primaryArtist:req.body.primaryArtist}).then((song) => {
     if(song) {
