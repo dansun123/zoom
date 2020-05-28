@@ -14,6 +14,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 //contains public chat and a create-room button
 
+
 class Main extends Component {
   constructor(props) {
     super(props);
@@ -24,6 +25,7 @@ class Main extends Component {
 
   componentDidMount() {
     // remember -- api calls go here!
+
   }
 
   render() {
@@ -40,6 +42,7 @@ class Main extends Component {
             id="name"
             label="Name"
             type="text"
+            autoComplete="off"
             value={this.props.userName}
             onChange={this.props.handleChange}
             onKeyPress={(event) => {
