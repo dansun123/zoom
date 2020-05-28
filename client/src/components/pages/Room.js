@@ -49,7 +49,16 @@ class Room extends Component {
             endTime: new Date(),
             answered: false,
             startTime: new Date(),
-            song: {title: "hi", primaryArtist: "hi", artUrl: "", karaokeUrl: ""},
+            song: {
+            title: "",
+            primaryArtist: "",
+            artUrl: "",
+            instrumentalUrl: "",
+            karaokeUrl: "",
+            songUrl: "",
+            youtubeUrl: "",
+            soundcloudUrl: ""
+          },
             timeToStart: 3,
             roomData: [],
             redirect: false,
@@ -60,15 +69,26 @@ class Room extends Component {
     }
     componentDidMount() {
         if(this.props.socketid !== "") {
-        post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
+        post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0}).then((data) => {
             if(data.exists)
-                 this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
+                 this.setState({roomID: data.roomID, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
             else {
                 this.setState({isLoading: false, status: "doesNotExist"})
             }
         }) 
         }
 
+        socket.on("reconnect", (attemptNumber) => {
+            console.log("After " + attemptNumber + " attempts, you reconnected")
+            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: this.state.score}).then((data) => {
+                if(data.exists)
+                     this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                else {
+                    this.setState({isLoading: false, status: "doesNotExist"})
+                }
+            }) 
+            
+        })
        
 
         socket.on("removeUser", (user) => {
@@ -219,7 +239,12 @@ class Room extends Component {
 
         let body = <></>
         if(this.state.status === "waitingToFinish") {
-            body = <h1>Waiting for Game to Finish</h1>
+            body = 
+            <>
+                <Timer endTime={this.state.endTime} />
+                <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
+                
+            </>
            
         }
         else if(this.state.status === "waiting") {

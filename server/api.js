@@ -68,7 +68,16 @@ router.post("/createNewRoom", (req, res) => {
     } else {
       console.log(req.body.roomID)
       console.log("New Main")
-      const newRoom = new Room({roomID: req.body.roomID, data: [], status: "waiting"});
+      const newRoom = new Room({roomID: req.body.roomID, data: [], status: "waiting", song: {
+        title: "",
+        primaryArtist: "",
+        artUrl: "",
+        instrumentalUrl: "",
+        karaokeUrl: "",
+        songUrl: "",
+        youtubeUrl: "",
+        soundcloudUrl: ""
+      }});
       newRoom.save().then(() => {
         res.send({created: true})
       })
@@ -84,21 +93,21 @@ router.post("/joinRoom", (req, res) => {
   socket.addUser({userID: req.body.userID, roomID: req.body.roomID, userName: req.body.userName}, socket.getSocketFromSocketID(req.body.socketid));
   Room.findOne({roomID: req.body.roomID}).then((room) => {
     if(room) {
-      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID})
+      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, score: req.body.score})
       let message = new Message({
         sender: {userID: req.body.userID, userName: req.body.userName},
         roomID: req.body.roomID, 
-        message: req.body.userName + " joined the Room",
+        message: req.body.userName + " " + ((req.body.score > 0) ? "re-" : "") + "joined the Room",
         systemMessage: true
       })
       message.save()
       socket.getIo().emit("newMessage", message)
       
       let data = room.data 
-      data.push({userID: req.body.userID, userName: req.body.userName, score: 0})
+      data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score})
       room.data = data
       room.save().then(() => {
-        res.send({exists: true, roomData: data, status: room.status, roomID: room._id})
+        res.send({exists: true, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
       })
     }
     else {
@@ -110,6 +119,7 @@ router.post("/joinRoom", (req, res) => {
 
 let finishGameMap = {}
 let gameData = {}
+let inProgressMap = {}
 
 let fromNow = (num) => {
   return new Date((new Date()).getTime() + num)
@@ -165,6 +175,7 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
   }
   finishGameMap[roomID][roundNum] = true
   if(roundNum === rounds) {
+    inProgressMap[req.body.roomID] = false 
     socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID})
       Room.findOne({roomID: roomID}).then((room) => {
         room.status = "roundFinished"
@@ -175,6 +186,10 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
     socket.getIo().emit("finishGame", {answer: songs[roundNum-1], roomID: roomID, song: songs[roundNum],  startTime: fromNow(5000), endTime: fromNow(35000)})
       Room.findOne({roomID: roomID}).then((room) => {
         room.status = "gameFinished"
+        room.song = songs[roundNum]
+        room.startTime = fromNow(5000)
+        room.endTime = fromNow(35000)
+        room.markModified("song")
         room.save()
       })
       
@@ -188,6 +203,8 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
 }
 
 router.post("/startGame", (req, res) => {
+  if(inProgressMap[req.body.roomID]) return 
+  inProgressMap[req.body.roomID] = true 
   console.log("startGame")
   var rounds = 10
   var roundNum = 0;
@@ -205,11 +222,16 @@ router.post("/startGame", (req, res) => {
           
           
               Room.findOne({roomID: req.body.roomID}).then((room) => {
-                room.status = "inProgress"
+                
                 let data = room.data 
                 let i = 0
                 for(i=0; i<data.length; i++) data[i].score = 0 
+                room.status = "timer"
+                room.startTime = fromNow(3000),
+                room.endTime = fromNow(33000)
+                room.song = songs[0]
                 room.data = data
+                room.markModified("song")
                
                 room.save().then(() => {
                   console.log("startin timer")
@@ -218,7 +240,13 @@ router.post("/startGame", (req, res) => {
 
                   setTimeout(() => {
                     gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15)}
-                    startGame(req.body.roomID)
+                    Room.findOne({roomID: req.body.roomID}).then((room) => {
+                      room.status = "inProgress"
+                      room.save().then(() => {
+                        startGame(req.body.roomID)
+                      })
+                    })
+                   
                   }, 3000)  
                   res.send({})
                 })
@@ -249,7 +277,7 @@ router.post("/newMessage", (req, res) => {
   let messageText = req.body.message
   if(req.body.systemMessage) systemMessage = true
   else {
-    let curWaiting = gameData[req.body.roomID]["waitingOn"]
+    let curWaiting = (req.body.inGame ? gameData[req.body.roomID]["waitingOn"] : 0)
     if((curWaiting >= 1) && req.body.inGame && (similarity(messageText, req.body.title) > 0.7)) {
       
 

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const RoomSchema = new mongoose.Schema({
   roomID: String,
   data: [{
@@ -8,7 +7,12 @@ const RoomSchema = new mongoose.Schema({
     score: {type: Number, default: 0}
   }],
   status: String, // either "waiting", "1inProgress", "2inProgress", .., "gameFinished", "roundFinished" 
-  waitingForAnswers: {type: Number, default: 0}
+  waitingForAnswers: {type: Number, default: 0},
+  startTime: {type: Date, default: Date.now},
+  endTime: {type: Date, default: Date.now},
+  song: Object
+
+
 });
 
 // compile model from schema
