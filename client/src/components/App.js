@@ -105,7 +105,6 @@ class App extends Component {
     else {
       this.setState({didPlay: true});
     }
-
   };
 
   render() {
@@ -152,7 +151,7 @@ class App extends Component {
 
     return (
       <>
-        {/* <button onClick = {()=>{get('/api/printall')}}>log app state</button> */}
+        <button onClick = {()=>{get('/api/printall', {title: "Best Song Ever"})}}>log app state</button>
         {this.state.didPlay ? gameContent : generalContent}
       </>
     );
