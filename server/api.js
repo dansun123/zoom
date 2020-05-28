@@ -7,6 +7,7 @@
 |
 */
 require("dotenv").config();
+const xlsxFile = require('read-excel-file/node');
 var autocorrect = {}
 
 const API_KEY = process.env.API_KEY;
@@ -415,7 +416,10 @@ router.post("/songLink", (req, res) => {
 })
 
 router.post("/songModify", (req, res) => {
-  console.log("posted "+req.body.title)
+  if(!process.env.password) {
+    res.send({})
+  } else {
+    console.log("posted "+req.body.title)
   Song.findOne({title: req.body.title, primaryArtist:req.body.primaryArtist}).then((song) => {
     if(song) {
       song.title = req.body.title
@@ -442,6 +446,7 @@ router.post("/songModify", (req, res) => {
     }
   })
   res.send({});
+  }
 })
 
 router.get("/printall", (req,res) => {
@@ -449,6 +454,43 @@ router.get("/printall", (req,res) => {
     songs.forEach((song) => {
       console.log(song.title)
     })
+  })
+  res.send({});
+})
+
+router.post("/simpleLog", (req,res) => {
+  xlsxFile("./MongoSongs.xlsx").then((rows) => {
+    for(var i= 0; i<rows.length; i++) {
+      let j = i
+      console.log(rows[j][0])
+      request('https://itunes.apple.com/search?term='+utf8.encode(rows[j][0])+'&entity=song&limit=1', (error, response, body) => {
+        if (!error && response.statusCode == 200 && JSON.parse(body).results[0]) {
+          let songUrl = JSON.parse(body).results[0].previewUrl
+          genius.search(rows[j][0]).then(function(response1) {
+            genius.song(response1.hits[0].result.id).then(function(response) {
+              let title = String(response.song.title);
+              let primaryArtist =  response.song.primary_artist.name;
+              let artUrl = response.song.song_art_image_url;
+              console.log("made it "+rows[j][0])
+              Song.findOne({title:title}).then((oldSong) => {
+                if(oldSong) {
+                  oldSong.songUrl = songUrl
+                  oldSong.save();
+                } else {
+                  const song1 = new Song({
+                    title: title,
+                    primaryArtist: primaryArtist,
+                    artUrl: artUrl,
+                    songUrl: songUrl,
+                  })
+                  song1.save();
+                }
+              })
+            });
+          });
+        }
+      })
+    }
   })
   res.send({});
 })
