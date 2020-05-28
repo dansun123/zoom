@@ -56,6 +56,7 @@ class App extends Component {
 
   componentDidMount() {
     let roomID = window.location.href.substring(window.location.href.indexOf("/",9)+1)
+    roomID = roomID.substring(0, roomID.indexOf("?")>0 ? roomID.indexOf("?"): undefined)
     this.setState({
       roomID: roomID,
       didPlay: false
