@@ -387,11 +387,10 @@ router.post("/songLink", (req, res) => {
 })
 
 router.post("/songModify", (req, res) => {
-  if(process.env.PORT !== 3000) {
+  if(!process.env.password) {
     res.send({})
-    break
-  }
-  console.log("posted "+req.body.title)
+  } else {
+    console.log("posted "+req.body.title)
   Song.findOne({title: req.body.title, primaryArtist:req.body.primaryArtist}).then((song) => {
     if(song) {
       song.title = req.body.title
@@ -418,6 +417,7 @@ router.post("/songModify", (req, res) => {
     }
   })
   res.send({});
+  }
 })
 
 router.get("/printall", (req,res) => {
