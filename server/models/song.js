@@ -9,6 +9,7 @@ const SongSchema = new mongoose.Schema({
   songUrl: String,
   youtubeUrl: String,
   soundcloudUrl: String,
+  bad: {type: Boolean, default: false}
 });
 
 // compile model from schema

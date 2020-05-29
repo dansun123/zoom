@@ -21,7 +21,8 @@ import "../utilities.css";
 import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
-
+import Cookies from 'universal-cookie';
+const cookies = new Cookies()
 
 function makeid(length) {
   var result           = '';
@@ -40,7 +41,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userName: "",
+      userName: (cookies.get('name') ? cookies.get('name') : ""),
       userID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       roomID: "",
       socketid: "",
@@ -79,6 +80,7 @@ class App extends Component {
 
   createRoom = () => {
     this.setState({didPlay: true})
+    cookies.set('name', this.state.userName, {path: '/'})
     if(this.state.userName==="") {
       this.setState({userName: "Guest"+makeid(5)})
     }
@@ -92,6 +94,7 @@ class App extends Component {
   }
 
   playNow = () => {
+    cookies.set('name', this.state.userName, {path: '/'})
     if(this.state.userName==="") {
       this.setState({userName: "Guest"+makeid(5)})
     }
