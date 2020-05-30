@@ -22,7 +22,7 @@ class Chat extends React.Component {
     event.preventDefault();
     // this.sendMessage();
     this.setState({ messageText: ""})
-    post("api/newMessage", {message: this.state.messageText, roomID: this.props.roomID, inGame: (this.props.status === "inProgress" && !this.props.answered) , title: this.props.song.title, score: this.props.score, points: Math.floor(((new Date(this.props.endTime)).getTime() - (new Date()).getTime()))/1000.0, userID: this.props.userID, userName: this.props.userName}).then(() => {
+    post("api/newMessage", {message: this.state.messageText, roomID: this.props.roomID, inGame: (this.props.status === "inProgress" && !this.props.answered) , title: this.props.song.title, score: this.props.score, userID: this.props.userID, userName: this.props.userName}).then(() => {
       
     });
   };

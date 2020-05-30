@@ -302,10 +302,14 @@ router.post("/newMessage", (req, res) => {
       if(willFinish) {
         finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
       }
-      let points = Math.floor(Math.floor((req.body.points>=20 ? req.body.points-20: 0)+ req.body.points) + curWaiting*5 + 5)
-      
-      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points}
+     
       Room.findOne({roomID: req.body.roomID}).then((room) => {
+        let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
+        if(givenPoints < 0) givenPoints = 0
+        let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
+        
+        let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points}
+
         let data = room.data 
         data = data.filter((entry) => {
           return entry.userID !== req.body.userID;
@@ -313,8 +317,10 @@ router.post("/newMessage", (req, res) => {
         data.push(newEntry)
         room.data = data 
         room.save()
+
+        socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
+
       })
-      socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - req.body.points).toFixed(3), points: points})
     }
   }
 
