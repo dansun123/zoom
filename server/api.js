@@ -289,7 +289,7 @@ router.post("/newMessage", (req, res) => {
   if(req.body.systemMessage) systemMessage = true
   else {
     let curWaiting = (req.body.inGame ? gameData[req.body.roomID]["waitingOn"] : 0)
-    if((curWaiting >= 1) && req.body.inGame && (similarity(messageText, req.body.title) > 0.7)) {
+    if((curWaiting >= 1) && req.body.inGame && ((similarity(messageText, req.body.title) > 0.7) || (similarity(messageText.toLowerCase().replace("fuck", "forget"), req.body.title) > 0.7))) {
       
 
      
