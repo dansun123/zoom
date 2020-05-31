@@ -295,7 +295,7 @@ class Room extends Component {
             <>
 
             <h2 style={{display: "flex", justifyContent: "center"}}>Final Results</h2>
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
+            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} finalResults={this.state.answer ? true : false} />
             {(this.state.answer) ? 
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
             : <></>}            

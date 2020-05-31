@@ -40,7 +40,7 @@ export default function ScorePage(props) {
   
 
   let height = "calc(100% - 156px)";
-
+  if(props.finalResults) height = "calc(100% - 224px)";
   if(props.roomAnswers) {
     let roomAnswerElements = props.roomAnswers.sort((a,b) => {return a.time - b.time}).map((roomAnswer, place) => {
       let nameColor = "#2196f3"
