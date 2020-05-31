@@ -60,7 +60,7 @@ export default function ScorePage(props) {
     })
 
     return (
-    <Grid container direction="row" style={{width: 1, height: height}}>
+    <Grid container direction="row" style={{width: "100%", height: height}}>
     <Box  style={{overflow: "scroll", height: "100%"}} width={3/11} >
         <List>
           {scoreListElements}
