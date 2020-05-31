@@ -45,7 +45,7 @@ class Room extends Component {
         this.state = {
             status: "waitingToFinish",
             score: 0,
-  
+      
             isLoading: true,
             endTime: new Date(),
             answered: false,
@@ -67,13 +67,15 @@ class Room extends Component {
             copied: false,
             roomAnswers: [],
             roundNum: 1,
+            scoreHistory: [],
+            leaderboard: false,
         }
     }
     componentDidMount() {
         if(this.props.socketid !== "") {
         post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0}).then((data) => {
             if(data.exists)
-                 this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                 this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
             else {
                 this.setState({isLoading: false, status: "doesNotExist"})
             }
@@ -84,7 +86,7 @@ class Room extends Component {
             console.log("After " + attemptNumber + " attempts, you reconnected")
             post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: this.state.score}).then((data) => {
                 if(data.exists)
-                     this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                     this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
                 else {
                     this.setState({isLoading: false, status: "doesNotExist"})
                 }
@@ -136,7 +138,8 @@ class Room extends Component {
                 roomAnswers: [],
                 song: data.song,
                 score: 0,
-                roundNum: data.roundNum
+                roundNum: data.roundNum,
+                leaderboard: false
             })
 
             let counter = 0
@@ -170,7 +173,7 @@ class Room extends Component {
                 startTime: data.startTime, 
                 song: data.song,
                 answer: data.answer,
-                timeToStart: 5
+                timeToStart: 5,
                 
             })
 
@@ -194,8 +197,12 @@ class Room extends Component {
             this.setState({
                 status: "roundFinished", 
                 answer: data.answer,
-                timeToStart: 3
+                timeToStart: 3,
+                scoreHistory: data.scoreHistory,
+                leaderboard: true
             })
+
+           
 
         })
 
@@ -216,7 +223,7 @@ class Room extends Component {
         if((this.props.roomID !== prevProps.roomID) || (this.props.socketid !== prevProps.socketid)) {
             post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
                 if(data.exists)
-                     this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
+                    this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
                 else {
                     this.setState({isLoading: false, status: "doesNotExist"})
                 }
@@ -243,7 +250,7 @@ class Room extends Component {
             body = 
             <>
                 <Timer endTime={this.state.endTime} />
-                <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
+                <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
                 
             </>
            
@@ -254,7 +261,7 @@ class Room extends Component {
             <>
             
             <h2 style={{display: "flex", justifyContent: "center"}}>Waiting to Start</h2> 
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            <ScorePage withLeaderboard = {this.state.leaderboard} oomData = {this.state.roomData} userID = {this.props.userID} />
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.props.roomID})}}>Start Game</Button>
             </>
         }
@@ -262,7 +269,7 @@ class Room extends Component {
             body = 
             <>
             <h2 style={{display: "flex", justifyContent: "center"}}>Game starting in {this.state.timeToStart} seconds</h2>
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} />
+            <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} />
             </>
 
         }
@@ -273,7 +280,7 @@ class Room extends Component {
 
             <Timer endTime={this.state.endTime} />
             
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
+            <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
             </>
 
         }
@@ -284,7 +291,7 @@ class Room extends Component {
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
             
             : <></>}
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
+            <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} />
             
             <h3 style={{display: "flex", justifyContent: "center"}}>Next Round in {this.state.timeToStart} seconds</h3>
            
@@ -295,7 +302,7 @@ class Room extends Component {
             <>
 
             <h2 style={{display: "flex", justifyContent: "center"}}>Final Results</h2>
-            <ScorePage roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} finalResults={this.state.answer ? true : false} />
+            <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} roomAnswers={this.state.roomAnswers} finalResults={this.state.answer ? true : false} withLeaderboard = {this.state.leaderboard} />
             {(this.state.answer) ? 
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Answer: " + this.state.answer.title + " by " + this.state.answer.primaryArtist}</h2>
             : <></>}            
@@ -321,7 +328,17 @@ class Room extends Component {
             <>
                 
                  <Grid container direction="row" style={{height: "100%"}}>
-                 <Box width={"calc(100% - 400px)"} height="100%" >
+                 
+                 {this.state.leaderboard ?
+                  <Paper style={{width: "250px", height: "100%"}} >
+                 <h2 style={{display: "flex", justifyContent: "center"}}>Top Scores</h2>                      
+                 <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.scoreHistory} userID = {this.props.userID} leaderboard={true} />
+                 
+                </Paper> : <></>}
+                
+                 
+                
+                 <Box width={this.state.leaderboard ? "calc(100% - 650px)" : "calc(100% - 400px)"} height="100%" >
                      {body}
                 </Box>
                 <Paper style={{width: "360px", padding: "20px 20px 20px 20px"}}>
@@ -335,7 +352,14 @@ class Room extends Component {
         {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> : <></>}
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 10"}</h2>
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
-               
+            <Button fullWidth onClick={() => {
+                        if(this.state.leaderboard) {
+                            this.setState({leaderboard: false})
+                        }
+                        else {
+                            this.setState({leaderboard: true})
+                        }
+                    }}>{this.state.leaderboard ? "Hide Leaderboard" : "Show Leaderboard"}</Button>   
                 {/*
                 <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
                     Invite Link: {url}

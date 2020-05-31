@@ -11,10 +11,11 @@ const RoomSchema = new mongoose.Schema({
   startTime: {type: Date, default: Date.now},
   endTime: {type: Date, default: Date.now},
   song: Object,
-  roundNum: {type: Number, default: 1}
-
+  roundNum: {type: Number, default: 1},
+  scoreHistory: [{userID: String, userName: String, scores: Array, maxScore: Number}]
 
 });
+
 
 // compile model from schema
 module.exports = mongoose.model("room", RoomSchema);

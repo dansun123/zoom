@@ -86,7 +86,8 @@ router.post("/createNewRoom", (req, res) => {
         songUrl: "",
         youtubeUrl: "",
         soundcloudUrl: ""
-      }});
+      },
+    scoreHistory: []});
       newRoom.save().then(() => {
         res.send({created: true})
       })
@@ -115,8 +116,11 @@ router.post("/joinRoom", (req, res) => {
       let data = room.data 
       data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score})
       room.data = data
+      let scoreHistory = room.scoreHistory
+      scoreHistory.push({userID: req.body.userID, userName: req.body.userName, scores: [0, 0, 0], maxScore: 0})
+      room.scoreHistory = scoreHistory
       room.save().then(() => {
-        res.send({exists: true, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
+        res.send({exists: true, scoreHistory: room.scoreHistory, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
       })
     }
     else {
@@ -186,10 +190,24 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
   finishGameMap[roomID][roundNum] = true
   if(roundNum === rounds) {
     inProgressMap[roomID] = false 
-    socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID})
+    
       Room.findOne({roomID: roomID}).then((room) => {
         room.status = "roundFinished"
-        room.save()
+        let scoreHistory = room.scoreHistory 
+        let i=0
+        let j=0
+        let data = room.data
+        for(i=0; i<data.length; i++) {
+          for(j=0; j<scoreHistory.length; j++) {
+            if(scoreHistory[j].userID === data[i].userID) {
+              scoreHistory[j].scores.push(data[i].score)
+              if(data[i].score > scoreHistory[j].maxScore) scoreHistory[j].maxScore = data[i].score 
+            }
+          }
+        }
+        room.save().then(() => {
+          socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID, scoreHistory: room.scoreHistory})
+        })
       })
   }
   else {
@@ -216,7 +234,7 @@ router.post("/startGame", (req, res) => {
   if(inProgressMap[req.body.roomID]) return 
   inProgressMap[req.body.roomID] = true 
   console.log("startGame")
-  var rounds = 10
+  var rounds = 1
   var roundNum = 0;
   var songs = []
   Song.aggregate(

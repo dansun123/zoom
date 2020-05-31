@@ -20,7 +20,7 @@ class Topbar extends Component {
     return (
       <>
         <div className = "topbar center">
-          <div className = "title">PRTY</div>
+          <div className = "title">Partyy Life</div>
         </div>
       </>
     );
