@@ -18,6 +18,7 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { Link } from '@material-ui/core';
 
 import Box from "@material-ui/core/Box";
+import Paper from "@material-ui/core/Paper";
 import Slide from '@material-ui/core/Slide';
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -319,20 +320,23 @@ class Room extends Component {
         return (
             <>
                 
-                 <Grid container direction="row">
-                 <Box width={"calc(100% - 400px)"} >
+                 <Grid container direction="row" style={{height: "100%"}}>
+                 <Box width={"calc(100% - 400px)"} height="100%" >
                      {body}
                 </Box>
-                <Box width={"400px"} >
+                <Paper style={{width: "360px", padding: "20px 20px 20px 20px"}}>
                
    
                      
 
-                    {<Box style={{height: (this.state.status === "inProgress" ? "260px" : "0px"), overflow: "scroll"}}>
+                    {<Box style={{height: (this.state.status === "inProgress" ? "240px" : "0px"), overflow: "scroll"}}>
                 <Music url = {this.state.song.instrumentalUrl ? this.state.song.instrumentalUrl: this.state.song.songUrl} visual={window.AudioContext ? true : false} pauseButton={window.AudioContext ? false : true} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
         </Box>} 
-        {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "260px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"260px"} /></Box> : <></>}
+        {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> : <></>}
+            <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 10"}</h2>
             <Chat endTime={this.state.endTime} messages={this.props.chat} roomID={this.props.roomID} status={this.state.status} answered={this.state.answered} song={this.state.song} userName={this.props.userName} userID={this.props.userID} score={this.state.score} />
+               
+                {/*
                 <h3 style={{display: "flex", justifyContent: "center", alignItems: "center"}}> 
                     Invite Link: {url}
                    
@@ -344,7 +348,7 @@ class Room extends Component {
                             : <Button fullWidth className = "button2">Copied to clipboard!</Button>
                         }
                     </CopyToClipboard>
-                    <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 10"}</h2>
+                    
                     <Button fullWidth onClick={() => {
                         let badsong = this.state.status === "inProgress" ? this.state.song : this.state.answer
                         console.log("Bad song: ")
@@ -353,8 +357,8 @@ class Room extends Component {
                     }}>Mark Song as Bad</Button>
                     <div className="margins">
                         <Link className = "margins" target="_blank" href = "https://docs.google.com/forms/d/e/1FAIpQLSc0DR9zF_wR7mPAwPWjyp2DdygBftxvKATUPZsjGBBKRiCYcg/viewform?usp=sf_link">Submit Song Requests</Link>
-                    </div>
-                </Box>
+                </div>*/}
+                </Paper>
                 </Grid>
                 
                 

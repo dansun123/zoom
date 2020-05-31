@@ -39,7 +39,7 @@ export default function ScorePage(props) {
   
   
 
-  let height = "480px";
+  let height = "calc(100% - 156px)";
 
   if(props.roomAnswers) {
     let roomAnswerElements = props.roomAnswers.sort((a,b) => {return a.time - b.time}).map((roomAnswer, place) => {
@@ -60,14 +60,14 @@ export default function ScorePage(props) {
     })
 
     return (
-    <Grid container direction="row" width={1}>
-    <Box  style={{overflow: "scroll", height: height}} width={3/11} >
+    <Grid container direction="row" style={{width: 1, height: height}}>
+    <Box  style={{overflow: "scroll", height: "100%"}} width={3/11} >
         <List>
           {scoreListElements}
         </List>
     </Box>
     {props.roomAnswers.length > 0 ? <Divider orientation="vertical" flexItem /> : <></>}
-    <Box  style={{overflow: "scroll", height: height}} width={7/11} >
+    <Box  style={{overflow: "scroll", height: "100%"}} width={7/11} >
         <List>
           {roomAnswerElements}
         </List>

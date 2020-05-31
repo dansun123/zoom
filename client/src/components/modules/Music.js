@@ -67,7 +67,7 @@ class Music extends React.Component {
     render() {
       return (
         <>
-          <Grid container direction="column" style={{padding: "10px 10px 10px 10px"}}>
+          <Grid container direction="column">
           {/* <div>pre</div> */}
           
           <Box height={this.props.visual ? "130px" : "0px"}></Box>

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Box from '@material-ui/core/Box';
+import Paper from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import List from "@material-ui/core/List";
 
@@ -53,8 +54,8 @@ class Chat extends React.Component {
       return str
     }
     return (
-      <Box >
-      <Box height={height}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "scroll", color: "black", display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
+      <Paper style={{borderRadius: "5px", backgroundColor: "#FFFFFF"}} >
+      <Box height={height}  style={{width: "100%", overflow: "scroll", color: "black", display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
           
             <List>
               {this.getLastFew(50, this.props.messages.filter((message) => {return (message.roomID === this.props.roomID)})).map((message) => {
@@ -97,7 +98,7 @@ class Chat extends React.Component {
       }}
 
       />
-      </Box>
+      </Paper>
     );
   }
 
