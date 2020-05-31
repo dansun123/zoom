@@ -261,7 +261,7 @@ class Room extends Component {
             <>
             
             <h2 style={{display: "flex", justifyContent: "center"}}>Waiting to Start</h2> 
-            <ScorePage withLeaderboard = {this.state.leaderboard} oomData = {this.state.roomData} userID = {this.props.userID} />
+            <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} />
             <Button fullWidth onClick={() => {post("/api/startGame", {roomID: this.props.roomID})}}>Start Game</Button>
             </>
         }
