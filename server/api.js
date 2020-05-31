@@ -234,7 +234,7 @@ router.post("/startGame", (req, res) => {
   if(inProgressMap[req.body.roomID]) return 
   inProgressMap[req.body.roomID] = true 
   console.log("startGame")
-  var rounds = 1
+  var rounds = 10
   var roundNum = 0;
   var songs = []
   Song.aggregate(

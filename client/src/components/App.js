@@ -91,7 +91,12 @@ class App extends Component {
     post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
 
       this.setState({roomID: randomRoomID, didPlay: true}, () => {
-        window.location.href = ('/'+randomRoomID);
+        if(window.location.href.includes("partyy.life")) {
+          window.location.href = ('partyy.life/'+randomRoomID);
+        }
+        else {
+          window.location.href = ('/'+randomRoomID);
+        }
       });
     })
   }
