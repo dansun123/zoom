@@ -200,7 +200,6 @@ let startGame = (roomID) => {
 let updateUserRatings = (data) => {
   let newUsers = []
   let k = data.k || 60/data.length
-  console.log(k)
   for(var i=0; i<data.length; i++) {
     let user1 = data[i]
     let newUser = JSON.parse(JSON.stringify(user1))
@@ -214,7 +213,7 @@ let updateUserRatings = (data) => {
       }
       let p1 = 1.0 / (1.0 + Math.pow(10, (user2.rating - user1.rating) / 400.0));
       let update = (k * (constant - p1)>0) ? 2*(k * (constant - p1)) : k * (constant - p1); 
-      newUser.rating = newUser.rating + 2*(k * (constant - p1));
+      newUser.rating = newUser.rating + update;
     }
     console.log(newUser)
     newUsers.push(newUser)
@@ -262,7 +261,7 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
         }
         room.data = newData
         room.save().then(() => {
-          socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID, scoreHistory: room.scoreHistory, data: data})
+          socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID, scoreHistory: room.scoreHistory, data: newData})
         })
       })
   }

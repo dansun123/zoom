@@ -47,21 +47,21 @@ class Room extends Component {
         this.state = {
             status: "waitingToFinish",
             score: 0,
-      
+            rating: 1000,
             isLoading: true,
             endTime: new Date(),
             answered: false,
             startTime: new Date(),
             song: {
-            title: "",
-            primaryArtist: "",
-            artUrl: "",
-            instrumentalUrl: "",
-            karaokeUrl: "",
-            songUrl: "",
-            youtubeUrl: "",
-            soundcloudUrl: ""
-          },
+                title: "",
+                primaryArtist: "",
+                artUrl: "",
+                instrumentalUrl: "",
+                karaokeUrl: "",
+                songUrl: "",
+                youtubeUrl: "",
+                soundcloudUrl: ""
+            },
             timeToStart: 3,
             roomData: [],
             redirect: false,
@@ -74,7 +74,7 @@ class Room extends Component {
         }
     }
     componentDidMount() {
-        let rating = cookies.get("rating") || 1000
+        let rating = this.state.rating || cookies.get("rating") || 1000
         if(this.props.socketid !== "") {
         post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0, rating: rating}).then((data) => {
             if(data.exists)
@@ -183,8 +183,7 @@ class Room extends Component {
 
         socket.on("results", (data) => {
             if(this.props.roomID !== data.roomID) return;
-            
-               
+
             this.setState({
                 status: "roundFinished", 
                 answer: data.answer,
@@ -193,11 +192,15 @@ class Room extends Component {
                 leaderboard: true
             })
             let newRating = 1000
-            for(var i =0; i<data.data.length; i++) {
-                if(data.data[i].userID == this.props.userID) {
-                    newRating = data.data[i].rating
+            for(var j = 0; j<data.data.length; j++) {
+                if(data.data[j].userID === this.props.userID) {
+                     newRating = data.data[j].rating
                 }
             }
+            this.setState({
+                data: data.data,
+                rating: newRating,
+            })
             cookies.set("rating", newRating)
         })
 
@@ -220,7 +223,7 @@ class Room extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        let rating = cookies.get("rating") || 1000
+        let rating = this.state.rating || cookies.get("rating") || 1000
         if((this.props.roomID !== prevProps.roomID) || (this.props.socketid !== prevProps.socketid)) {
             post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, rating: rating}).then((data) => {
                 if(data.exists)
