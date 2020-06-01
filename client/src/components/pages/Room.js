@@ -37,6 +37,8 @@ import ScorePage from "../modules/ScorePage";
 import ReactPiano from "../modules/ReactPiano"
 // import "../stylesheets/Audio.css";
 // import "../stylesheets/Audio.scss";
+import Cookies from 'universal-cookie';
+const cookies = new Cookies()
 
 class Room extends Component {
     constructor(props) {
@@ -69,19 +71,20 @@ class Room extends Component {
         }
     }
     componentDidMount() {
+        let rating = cookies.get("rating") || 1000
         if(this.props.socketid !== "") {
-        post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0}).then((data) => {
-            if(data.exists)
-                 this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
-            else {
-                this.setState({isLoading: false, status: "doesNotExist"})
-            }
-        }) 
+            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0, rating: rating}).then((data) => {
+                if(data.exists)
+                    this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                else {
+                    this.setState({isLoading: false, status: "doesNotExist"})
+                }
+            }) 
         }
 
         socket.on("reconnect", (attemptNumber) => {
             console.log("After " + attemptNumber + " attempts, you reconnected")
-            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: this.state.score}).then((data) => {
+            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: this.state.score, rating: rating}).then((data) => {
                 if(data.exists)
                      this.setState({roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
                 else {
@@ -102,7 +105,7 @@ class Room extends Component {
         socket.on("someoneJoinedRoom", (user) => {
             if(user.roomID !== this.props.roomID) return;
             let data = this.state.roomData
-            data.push({userID: user.userID, userName: user.userName, score: 0})
+            data.push({userID: user.userID, userName: user.userName, score: 0, rating: user.rating})
             this.setState({roomData: data})
         })
 
@@ -193,9 +196,13 @@ class Room extends Component {
             this.setState({
                 status: "roundFinished", 
                 answer: data.answer,
-                timeToStart: 3
+                timeToStart: 3,
+                //rating updates
             })
-
+            let arr = this.state.roomData
+            arr = arr.filter((obj) => {return obj.userID !== update.entry.userID})
+            let newRating = data.users[update.entry.userID].rating
+            cookies.set('rating', newRating, {path: '/'})
         })
 
         socket.on("disconnect", () => {
@@ -212,8 +219,9 @@ class Room extends Component {
     }
 
     componentDidUpdate(prevProps) {
+        let rating = cookies.get("rating") || 1000
         if((this.props.roomID !== prevProps.roomID) || (this.props.socketid !== prevProps.socketid)) {
-            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName}).then((data) => {
+            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, rating: rating}).then((data) => {
                 if(data.exists)
                      this.setState({roomID: data.roomID, roomData: data.roomData, status: (data.status === "inProgress" ? "waitingToFinish" : data.status), isLoading: false})
                 else {

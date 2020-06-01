@@ -102,7 +102,7 @@ router.post("/joinRoom", (req, res) => {
   socket.addUser({userID: req.body.userID, roomID: req.body.roomID, userName: req.body.userName}, socket.getSocketFromSocketID(req.body.socketid));
   Room.findOne({roomID: req.body.roomID}).then((room) => {
     if(room) {
-      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, score: req.body.score})
+      socket.getIo().emit("someoneJoinedRoom", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, score: req.body.score, rating: req.body.rating})
       let message = new Message({
         sender: {userID: req.body.userID, userName: req.body.userName},
         roomID: req.body.roomID, 
@@ -113,7 +113,7 @@ router.post("/joinRoom", (req, res) => {
       socket.getIo().emit("newMessage", message)
       
       let data = room.data 
-      data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score})
+      data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score, rating: req.body.rating})
       room.data = data
       room.save().then(() => {
         res.send({exists: true, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
@@ -163,7 +163,28 @@ let startGame = (roomID) => {
  
 }
 
-
+let updateUserRatings = (data) => {
+  let newUsers = []
+  let k = data.k || 60/data.length
+  data.forEach((user1) => {
+    let newUser = JSON.parse(JSON.stringify(user1))
+    data.forEach((user2) => {
+      let constant = 0
+      if (user1.rating>user2.rating) {
+        constant = 1
+      } else if (user1.rating === user2.rating) {
+        constant = 0.5
+      }
+      let p1 =
+        1.0 /
+        (1.0 +
+          Math.pow(10, (user2.rating - user1.rating) / 400.0));
+      newUser.rating += k * (constant - p1);
+    })
+    newUsers.push(newUser)
+  })
+  return newUsers
+}
 
 let finishGame = (roomID, possibleRoundNum, gameID) => {
 
@@ -185,10 +206,12 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
   }
   finishGameMap[roomID][roundNum] = true
   if(roundNum === rounds) {
+    let newData = updateUserRatings(gameData.data)
     inProgressMap[roomID] = false 
-    socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID})
+    socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID, data: newData})
       Room.findOne({roomID: roomID}).then((room) => {
         room.status = "roundFinished"
+        room.data = newData
         room.save()
       })
   }
