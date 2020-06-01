@@ -5,7 +5,7 @@ const RoomSchema = new mongoose.Schema({
     userID: String,
     userName: String,
     score: {type: Number, default: 0},
-    rating: Number,
+    rating: {type: Number, default: 1000},
   }],
   status: String, // either "waiting", "1inProgress", "2inProgress", .., "gameFinished", "roundFinished" 
   waitingForAnswers: {type: Number, default: 0},

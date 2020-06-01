@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import LinearProgress from '@material-ui/core/LinearProgress'
 export default function ScorePage(props) {
   const [maxValue, setMaxValue] = useState(15)
-  let scoreListElements = props.roomData.sort((a, b) => {if(props.leaderboard) {return b.maxScore - a.maxScore}; return b.score - a.score}).map((user, place) => {
+  let scoreListElements = props.roomData.sort((a, b) => {if(props.rating) {return b.rating - a.rating};if(props.leaderboard) {return b.maxScore - a.maxScore};  return b.score - a.score}).map((user, place) => {
   
     let fontWeight = 'normal'
 
@@ -44,8 +44,8 @@ export default function ScorePage(props) {
     }
 
   <ListItemSecondaryAction>
-    {props.leaderboard ? <h4 style={{fontWeight: "900", color: nameColor}}>{((props.leaderboard ? user.maxScore : user.score) || "0") + " "} </h4>
-    :   <h3 style={{fontWeight: "900", color: nameColor}}>{((props.leaderboard ? user.maxScore : user.score) || "0") + " "} </h3>
+    {props.leaderboard ? <h4 style={{fontWeight: "900", color: nameColor}}>{((props.rating ? user.rating : (props.leaderboard ? user.maxScore : user.score)) || "0") + " "} </h4>
+    :   <h3 style={{fontWeight: "900", color: nameColor}}>{((props.rating ? user.rating : (props.leaderboard ? user.maxScore : user.score)) || "0") + " "} </h3>
   }
     </ListItemSecondaryAction>
     </ListItem>
@@ -56,6 +56,10 @@ export default function ScorePage(props) {
 
   let height = "calc(100% - 156px)";
   if(props.finalResults) height = "calc(100% - 224px)";
+  if(props.leaderboard) {
+    height = "calc(50% - 78px)";
+    if(props.finalResults) height = "calc(50% - 112px)";
+  }
   if(props.roomAnswers) {
     let roomAnswerElements = props.roomAnswers.sort((a,b) => {return a.time - b.time}).map((roomAnswer, place) => {
       let nameColor = "#2196f3"

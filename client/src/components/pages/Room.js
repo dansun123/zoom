@@ -329,6 +329,7 @@ class Room extends Component {
         }
         let url = window.location.href
             if(url.charAt(url.length - 1) === '/') url += this.props.roomID
+        console.log(this.state.roomData)
         return (
             <>
                 
@@ -336,6 +337,9 @@ class Room extends Component {
                  
                  {this.state.leaderboard ?
                   <Paper style={{width: "250px", height: "100%"}} >
+                 <h2 style={{display: "flex", justifyContent: "center"}}>Top Ratings</h2> 
+                 <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.roomData} userID = {this.props.userID} leaderboard={true} rating={true} />
+
                  <h2 style={{display: "flex", justifyContent: "center"}}>Top Scores</h2>                      
                  <ScorePage withLeaderboard = {this.state.leaderboard} roomData = {this.state.scoreHistory} userID = {this.props.userID} leaderboard={true} />
                  
