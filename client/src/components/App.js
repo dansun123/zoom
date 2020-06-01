@@ -5,7 +5,8 @@ import {
   Switch,
   Route,
   Link,
-  useParams
+  useParams,
+  Redirect
 } from "react-router-dom";
 
 import NotFound from "./pages/NotFound.js";
@@ -44,6 +45,7 @@ class App extends Component {
       userName: (cookies.get('name') ? cookies.get('name') : ""),
       userID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       roomID: "",
+      redirect: "",
       socketid: "",
       didPlay: false,
       chat: []
@@ -85,8 +87,6 @@ class App extends Component {
 
   createRoom = (roomID) => {
     roomID = encodeURI(roomID)
-    if(roomID.includes("localhost") || roomID.includes("prty.herokuapp")) return 
-
     this.setState({didPlay: true})
     cookies.set('name', this.state.userName, {path: '/'})
     if(this.state.userName==="") {
@@ -95,13 +95,9 @@ class App extends Component {
     let randomRoomID = roomID
     post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
 
-      this.setState({roomID: randomRoomID, didPlay: true}, () => {
-        if(!window.location.href.includes("localhost") && !window.location.href.includes("prty.herokuapp")) {
-          window.location.href = ('partyy.life/'+randomRoomID);
-        }
-        else {
-          window.location.href = ('/'+randomRoomID);
-        }
+      this.setState({roomID: randomRoomID, didPlay: true, redirect: "/"+randomRoomID}, () => {
+        
+
       });
     })
   }
@@ -124,6 +120,11 @@ class App extends Component {
   };
 
   render() {
+    if(this.state.redirect !== "") {
+      let path = this.state.redirect
+      this.setState({redirect: ""})
+      return  <Router><Switch><Route path="/"><Redirect to={path} /></Route></Switch></Router>
+    }
     let gameContent =  
       (
       <>

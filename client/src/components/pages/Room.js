@@ -230,13 +230,8 @@ class Room extends Component {
             window.location.href = "/"
         }
         if(this.state.refresh) {
-            if(!window.location.href.includes("localhost") && !window.location.href.includes("prty.herokuapp")) {
-
-                 window.location.href =("/"+this.props.roomID)
-            }
-            else {
-                window.location.href =("partyy.live/"+this.props.roomID)
-            }
+            console.log("Aha, you have been refreshed")
+            window.location.reload();
         }
         if(this.state.isLoading) {
             return <>
