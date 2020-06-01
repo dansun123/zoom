@@ -56,8 +56,37 @@ router.post("/initsocket", (req, res) => {
 // | write your API methods below!|
 // |------------------------------|
 
+let clearOutInactives = () => {
+  Room.find({}).then((rooms) => {
+    rooms.forEach((room) => {
+      let toRemove = []
+      let counter = 0
+      room.data.forEach((entry) => {
+        counter += 1
+        if(!socket.getSocketFromUserID(entry.userID) || !socket.getSocketFromUserID(entry.userID).connected) {
+          toRemove.push(entry.userID)
+          socket.getIo().emit("removeUser", {userID: entry.userID, roomID: room.roomID});
+          let message = new Message({
+            sender: {userID: entry.userID, userName: entry.userName},
+            roomID: room.roomID, 
+            message: entry.userName + " left the Room",
+            systemMessage: true
+          })
+          message.save()
+          socket.getIo().emit("newMessage", message)
+        }
+        if(counter === room.data.length ){ 
+          let data = room.data 
+          data = data.filter((entry) => {return !toRemove.includes(entry.userID)})
+          room.data = data 
+          room.save()
+        }
+      }
+    )
+  })})
+}
 
-
+setInterval(clearOutInactives, 1000*60*30);
 
 router.post("/badSong", (req, res) => {
   // do nothing if user not logged in
@@ -142,6 +171,7 @@ let fromNow = (num) => {
 
 let startGame = (roomID) => {
   // make sure it has not happened yet
+  
   let obj = gameData[roomID]
   let roundNum = obj.roundNum 
   let rounds = obj.rounds 
@@ -277,6 +307,8 @@ router.post("/startGame", (req, res) => {
                     })
                    
                   }, 3000)  
+                  clearOutInactives()
+
                   res.send({})
                 })
               })
