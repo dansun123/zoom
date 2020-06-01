@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Box from '@material-ui/core/Box';
+import Paper from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import List from "@material-ui/core/List";
 
@@ -22,7 +23,15 @@ class Chat extends React.Component {
     event.preventDefault();
     // this.sendMessage();
     this.setState({ messageText: ""})
-    post("api/newMessage", {message: this.state.messageText, roomID: this.props.roomID, inGame: (this.props.status === "inProgress" && !this.props.answered) , title: this.props.song.title, score: this.props.score, points: Math.floor(((new Date(this.props.endTime)).getTime() - (new Date()).getTime()))/1000.0, userID: this.props.userID, userName: this.props.userName}).then(() => {
+    post("api/newMessage", {
+      message: this.state.messageText, 
+      roomID: this.props.roomID, 
+      inGame: (this.props.status === "inProgress" && !this.props.answered) , 
+      title: this.props.song.title, score: this.props.score, 
+      userID: this.props.userID, 
+      userName: this.props.userName,
+      rating: this.props.rating
+    }).then(() => {
       
     });
   };
@@ -53,8 +62,8 @@ class Chat extends React.Component {
       return str
     }
     return (
-      <Box >
-      <Box height={height}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "scroll", color: "black", display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
+      <Paper style={{borderRadius: "5px", backgroundColor: "#FFFFFF"}} >
+      <Box height={height}  style={{width: "100%", overflow: "scroll", color: "black", display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
           
             <List>
               {this.getLastFew(50, this.props.messages.filter((message) => {return (message.roomID === this.props.roomID)})).map((message) => {
@@ -97,7 +106,7 @@ class Chat extends React.Component {
       }}
 
       />
-      </Box>
+      </Paper>
     );
   }
 

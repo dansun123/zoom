@@ -5,7 +5,8 @@ import {
   Switch,
   Route,
   Link,
-  useParams
+  useParams,
+  Redirect
 } from "react-router-dom";
 
 import NotFound from "./pages/NotFound.js";
@@ -44,6 +45,7 @@ class App extends Component {
       userName: (cookies.get('name') ? cookies.get('name') : ""),
       userID: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       roomID: "",
+      redirect: "",
       socketid: "",
       didPlay: false,
       chat: []
@@ -57,7 +59,10 @@ class App extends Component {
 
   componentDidMount() {
     let roomID = window.location.href.substring(window.location.href.indexOf("/",9)+1)
-    roomID = roomID.substring(0, roomID.indexOf("?")>0 ? roomID.indexOf("?"): undefined)
+    
+    roomID = roomID.substring(0, roomID.indexOf("?")>=0 ? roomID.indexOf("?"): undefined)
+    
+
     this.setState({
       roomID: roomID,
       didPlay: false
@@ -65,6 +70,8 @@ class App extends Component {
     socket.on('connect', () => {
       this.setState({socketid: socket.id})
     });
+
+    
     socket.on('newMessage', (message) => {
       let newChat  = this.state.chat;
       newChat.push(message)
@@ -78,29 +85,35 @@ class App extends Component {
     this.setState({ userName: event.target.value });
   };
 
-  createRoom = () => {
-    this.setState({didPlay: true})
-    cookies.set('name', this.state.userName, {path: '/'})
-    if(this.state.userName==="") {
-      this.setState({userName: "Guest"+makeid(5)})
-    }
-    let randomRoomID = Math.random().toString(36).substring(2, 15)
+  createRoom = (roomID) => {
+    let username = this.state.userName 
+    if(username.length > 16) username = username.substring(0, 16)
+    roomID = encodeURI(roomID)
+    if(username === "") username = "Guest"+makeid(5)
+    this.setState({didPlay: true, userName: username})
+    cookies.set('name', username, {path: '/'})
+    
+    
+    let randomRoomID = roomID
     post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
 
-      this.setState({roomID: randomRoomID, didPlay: true}, () => {
-       // window.location.href = ('/'+randomRoomID);
+      this.setState({roomID: randomRoomID, didPlay: true, redirect: "/"+randomRoomID}, () => {
+        
+
       });
     })
   }
 
   playNow = () => {
-    cookies.set('name', this.state.userName, {path: '/'})
-    if(this.state.userName==="") {
-      this.setState({userName: "Guest"+makeid(5)})
-    }
+    
+    let username = this.state.userName 
+    if(username.length > 16) username = username.substring(0, 16)
+    if(username === "") username = "Guest"+makeid(5)
+    cookies.set('name', username, {path: '/'})
+
     if(this.state.roomID === "") {
     post('api/createNewRoom', {roomID: "main"}).then((res) => {
-      this.setState({roomID: "main", didPlay: true}, () => {
+      this.setState({roomID: "main", didPlay: true, userName: username}, () => {
        // window.location.href = '/main'
       });
     })
@@ -111,6 +124,11 @@ class App extends Component {
   };
 
   render() {
+    if(this.state.redirect !== "") {
+      let path = this.state.redirect
+      this.setState({redirect: ""})
+      return  <Router><Switch><Route path="/"><Redirect to={path} /></Route></Switch></Router>
+    }
     let gameContent =  
       (
       <>

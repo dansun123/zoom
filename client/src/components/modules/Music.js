@@ -12,7 +12,8 @@ class Music extends React.Component {
         super(props);
         this.state = {
             play: this.props.autoplayMusic,
-            audio: new Audio()
+            audio: new Audio(),
+            changedOnce: false
         }
         this.state.audio.crossOrigin = "anonymous";
         this.state.audio.src = this.props.url + "?cb=" + new Date().getTime()
@@ -24,6 +25,7 @@ class Music extends React.Component {
       this.props.autoplayMusic ? this.state.audio.play() : this.state.audio.pause()
       socket.on("startGame", (data) => {
         if(this.props.roomID !== data.roomID) return;
+       
         this.setState({play: true}, () => {
           this.state.play ? this.state.audio.play() : this.state.audio.pause();
         })
@@ -57,7 +59,7 @@ class Music extends React.Component {
     }
   
     togglePlay = () => {
-      this.setState({ play: !this.state.play }, () => {
+      this.setState({ play: !(this.state.play && this.state.changedOnce), changedOnce: true }, () => {
         this.state.play ? this.state.audio.play() : this.state.audio.pause();
       });
     }
@@ -65,15 +67,15 @@ class Music extends React.Component {
     render() {
       return (
         <>
-          <Grid container direction="column" style={{padding: "10px 10px 10px 10px"}}>
+          <Grid container direction="column">
           {/* <div>pre</div> */}
           
-          <Box height={"130px"}></Box>
+          <Box height={this.props.visual ? "130px" : "0px"}></Box>
           
-          {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100px"}}/>}
+          {this.props.visual ? <AudioDataContainer audio = {this.state.audio} /> : <img src = {waves} style={{width: "100%"}}/>}
           {/* {this.props.pauseButton ? <ReactPlayer url={this.props.url} playing={this.state.play} controls/> : <ReactPlayer url={this.props.url} playing={this.state.play} width={'0%'} height={'0%'}/>} */}
           {/* <div>post</div> */}
-          {this.props.pauseButton ? <Button onClick={this.togglePlay} fullWidth >{this.state.play ? 'Pause' : 'Play'}</Button> : ""}
+          {this.props.pauseButton ? <Button onClick={this.togglePlay} fullWidth >{this.state.play && this.state.changedOnce ? 'Pause' : 'Play'}</Button> : ""}
 
           {/* <a href = {this.props.url}>SONGURL</a> */}
           </Grid>

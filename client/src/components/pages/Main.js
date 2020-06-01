@@ -19,6 +19,9 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      roomName: "",
+      createRoomOpen: false,
+      initialDialogOpen: true 
     };
     // Initialize Default State
   }
@@ -32,7 +35,7 @@ class Main extends Component {
     return (
       <>
         
-        <Dialog open={open} onClose={()=>{this.props.playNow()}} aria-labelledby="form-dialog-title">
+        <Dialog open={this.state.initialDialogOpen} onClose={()=>{this.props.playNow()}} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">You are joining {this.props.roomID === "" ? "Main Room" : ("Room " + this.props.roomID)}</DialogTitle>
         <DialogContent>
           
@@ -54,7 +57,7 @@ class Main extends Component {
           />
         </DialogContent>
         <DialogActions>
-          {this.props.roomID === "" ? <Button onClick={()=>{this.props.createRoom()}} color="primary">
+          {this.props.roomID === "" ? <Button onClick={()=>{this.setState({initialDialogOpen: false, createRoomOpen: true, roomName: Math.random().toString(36).substring(2, 15)})}} color="primary">
           Create Room
           </Button> : <></>}
           <Button onClick={()=>{this.props.playNow()}} color="primary">
@@ -62,6 +65,35 @@ class Main extends Component {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={this.state.createRoomOpen} onClose={()=>{this.setState({initialDialogOpen: true, createRoomOpen: false})}} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">Choose a Room Name</DialogTitle>
+        <DialogContent>
+          
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Room Name"
+            type="text"
+            autoComplete="off"
+            value={this.state.roomName}
+            onChange={(event) => {this.setState({roomName: event.target.value})}}
+            onKeyPress={(event) => {
+              if(event.charCode===13) {
+                this.props.createRoom(this.state.roomName)
+              }
+             }}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          {this.props.roomID === "" ? <Button onClick={()=>{this.props.createRoom(this.state.roomName)}} color="primary">
+          Create Room
+          </Button> : <></>}
+        </DialogActions>
+      </Dialog>
+
 
        
       </>

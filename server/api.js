@@ -56,8 +56,37 @@ router.post("/initsocket", (req, res) => {
 // | write your API methods below!|
 // |------------------------------|
 
+let clearOutInactives = () => {
+  Room.find({}).then((rooms) => {
+    rooms.forEach((room) => {
+      let toRemove = []
+      let counter = 0
+      room.data.forEach((entry) => {
+        counter += 1
+        if(!socket.getSocketFromUserID(entry.userID) || !socket.getSocketFromUserID(entry.userID).connected) {
+          toRemove.push(entry.userID)
+          socket.getIo().emit("removeUser", {userID: entry.userID, roomID: room.roomID});
+          let message = new Message({
+            sender: {userID: entry.userID, userName: entry.userName},
+            roomID: room.roomID, 
+            message: entry.userName + " left the Room",
+            systemMessage: true
+          })
+          message.save()
+          socket.getIo().emit("newMessage", message)
+        }
+        if(counter === room.data.length ){ 
+          let data = room.data 
+          data = data.filter((entry) => {return !toRemove.includes(entry.userID)})
+          room.data = data 
+          room.save()
+        }
+      }
+    )
+  })})
+}
 
-
+setInterval(clearOutInactives, 1000*60*30);
 
 router.post("/badSong", (req, res) => {
   // do nothing if user not logged in
@@ -86,7 +115,8 @@ router.post("/createNewRoom", (req, res) => {
         songUrl: "",
         youtubeUrl: "",
         soundcloudUrl: ""
-      }});
+      },
+    scoreHistory: []});
       newRoom.save().then(() => {
         res.send({created: true})
       })
@@ -113,10 +143,13 @@ router.post("/joinRoom", (req, res) => {
       socket.getIo().emit("newMessage", message)
       
       let data = room.data 
-      data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score, rating: req.body.rating})
+      data.push({userID: req.body.userID, userName: req.body.userName, score: req.body.score, rating: Number(req.body.rating)})
       room.data = data
+      let scoreHistory = room.scoreHistory
+      scoreHistory.push({userID: req.body.userID, userName: req.body.userName, scores: [0, 0, 0], maxScore: 0})
+      room.scoreHistory = scoreHistory
       room.save().then(() => {
-        res.send({exists: true, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
+        res.send({exists: true, scoreHistory: room.scoreHistory, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
       })
     }
     else {
@@ -138,6 +171,7 @@ let fromNow = (num) => {
 
 let startGame = (roomID) => {
   // make sure it has not happened yet
+  
   let obj = gameData[roomID]
   let roundNum = obj.roundNum 
   let rounds = obj.rounds 
@@ -166,23 +200,25 @@ let startGame = (roomID) => {
 let updateUserRatings = (data) => {
   let newUsers = []
   let k = data.k || 60/data.length
-  data.forEach((user1) => {
+  console.log(k)
+  for(var i=0; i<data.length; i++) {
+    let user1 = data[i]
     let newUser = JSON.parse(JSON.stringify(user1))
-    data.forEach((user2) => {
+    for(var j=0; j< data.length; j++){
+      let user2 = data[j]
       let constant = 0
-      if (user1.rating>user2.rating) {
+      if (user1.score>user2.score) {
         constant = 1
-      } else if (user1.rating === user2.rating) {
+      } else if (user1.score === user2.score) {
         constant = 0.5
       }
-      let p1 =
-        1.0 /
-        (1.0 +
-          Math.pow(10, (user2.rating - user1.rating) / 400.0));
-      newUser.rating += k * (constant - p1);
-    })
+      let p1 = 1.0 / (1.0 + Math.pow(10, (user2.rating - user1.rating) / 400.0));
+      let update = (k * (constant - p1)>0) ? 2*(k * (constant - p1)) : k * (constant - p1); 
+      newUser.rating = newUser.rating + 2*(k * (constant - p1));
+    }
+    console.log(newUser)
     newUsers.push(newUser)
-  })
+  }
   return newUsers
 }
 
@@ -206,13 +242,28 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
   }
   finishGameMap[roomID][roundNum] = true
   if(roundNum === rounds) {
-    let newData = updateUserRatings(gameData.data)
     inProgressMap[roomID] = false 
-    socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID, data: newData})
       Room.findOne({roomID: roomID}).then((room) => {
+        let newData = updateUserRatings(room.data)
+        console.log('hi')
+        console.log(newData)
         room.status = "roundFinished"
+        let scoreHistory = room.scoreHistory 
+        let i=0
+        let j=0
+        let data = room.data
+        for(i=0; i<data.length; i++) {
+          for(j=0; j<scoreHistory.length; j++) {
+            if(scoreHistory[j].userID === data[i].userID) {
+              scoreHistory[j].scores.push(data[i].score)
+              if(data[i].score > scoreHistory[j].maxScore) scoreHistory[j].maxScore = data[i].score 
+            }
+          }
+        }
         room.data = newData
-        room.save()
+        room.save().then(() => {
+          socket.getIo().emit("results", {answer: songs[roundNum-1], roomID: roomID, scoreHistory: room.scoreHistory, data: data})
+        })
       })
   }
   else {
@@ -239,7 +290,7 @@ router.post("/startGame", (req, res) => {
   if(inProgressMap[req.body.roomID]) return 
   inProgressMap[req.body.roomID] = true 
   console.log("startGame")
-  var rounds = 10
+  var rounds = 2
   var roundNum = 0;
   var songs = []
   Song.aggregate(
@@ -282,6 +333,8 @@ router.post("/startGame", (req, res) => {
                     })
                    
                   }, 3000)  
+                  clearOutInactives()
+
                   res.send({})
                 })
               })
@@ -322,22 +375,31 @@ router.post("/newMessage", (req, res) => {
       messageText = req.body.userName + " guessed the title!"
       style="Correct Answer"
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
-      if(willFinish) {
-        finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
-      }
-      let points = Math.floor(Math.floor((req.body.points>=20 ? req.body.points-20: 0)+ req.body.points) + curWaiting*5 + 5)
       
-      let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points}
+     
       Room.findOne({roomID: req.body.roomID}).then((room) => {
+        let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
+        if(givenPoints < 0) givenPoints = 0
+        let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
+        
+        let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points, rating: Number(req.body.rating)}
+
         let data = room.data 
         data = data.filter((entry) => {
           return entry.userID !== req.body.userID;
         })
         data.push(newEntry)
         room.data = data 
-        room.save()
+        room.save().then(() => {
+          if(willFinish) {
+            finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
+            socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
+
+          }
+        })
+
+
       })
-      socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - req.body.points).toFixed(3), points: points})
     }
   }
 
