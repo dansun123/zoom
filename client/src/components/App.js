@@ -86,12 +86,14 @@ class App extends Component {
   };
 
   createRoom = (roomID) => {
+    let username = this.state.userName 
+    if(username.length > 16) username = username.substring(0, 16)
     roomID = encodeURI(roomID)
-    this.setState({didPlay: true})
-    cookies.set('name', this.state.userName, {path: '/'})
-    if(this.state.userName==="") {
-      this.setState({userName: "Guest"+makeid(5)})
-    }
+    if(username === "") username = "Guest"+makeid(5)
+    this.setState({didPlay: true, userName: username})
+    cookies.set('name', username, {path: '/'})
+    
+    
     let randomRoomID = roomID
     post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
 
@@ -103,13 +105,15 @@ class App extends Component {
   }
 
   playNow = () => {
-    cookies.set('name', this.state.userName, {path: '/'})
-    if(this.state.userName==="") {
-      this.setState({userName: "Guest"+makeid(5)})
-    }
+    
+    let username = this.state.userName 
+    if(username.length > 16) username = username.substring(0, 16)
+    if(username === "") username = "Guest"+makeid(5)
+    cookies.set('name', username, {path: '/'})
+
     if(this.state.roomID === "") {
     post('api/createNewRoom', {roomID: "main"}).then((res) => {
-      this.setState({roomID: "main", didPlay: true}, () => {
+      this.setState({roomID: "main", didPlay: true, userName: username}, () => {
        // window.location.href = '/main'
       });
     })

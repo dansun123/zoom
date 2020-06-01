@@ -7,7 +7,9 @@ import Zoom from '@material-ui/core/Zoom';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
+
 import LinearProgress from '@material-ui/core/LinearProgress'
 export default function ScorePage(props) {
   const [maxValue, setMaxValue] = useState(15)
@@ -36,10 +38,16 @@ export default function ScorePage(props) {
     return <ListItem button dense style={{height: props.leaderboard ? "40px" : undefined}}>
 
     {props.leaderboard ?
-    <h4 style={{fontWeight: "900", color: nameColor}}>{(user.userName || "") + ": " + ((props.leaderboard ? user.maxScore : user.score) || "0") + " "} </h4>
+    <h4 style={{fontWeight: "900", color: nameColor}}>{(place + 1) + ". \t" + (user.userName || "")} </h4>
    :
-   <h3 style={{fontWeight: "900", color: nameColor}}>{(user.userName || "") + ": " + ((props.leaderboard ? user.maxScore : user.score) || "0") + " "} </h3>
+   <h3 style={{fontWeight: "900", color: nameColor}}>{ (user.userName || "")}</h3>
     }
+
+  <ListItemSecondaryAction>
+    {props.leaderboard ? <h4 style={{fontWeight: "900", color: nameColor}}>{((props.leaderboard ? user.maxScore : user.score) || "0") + " "} </h4>
+    :   <h3 style={{fontWeight: "900", color: nameColor}}>{((props.leaderboard ? user.maxScore : user.score) || "0") + " "} </h3>
+  }
+    </ListItemSecondaryAction>
     </ListItem>
   })
 

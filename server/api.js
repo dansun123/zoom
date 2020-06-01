@@ -264,7 +264,7 @@ router.post("/startGame", (req, res) => {
   if(inProgressMap[req.body.roomID]) return 
   inProgressMap[req.body.roomID] = true 
   console.log("startGame")
-  var rounds = 10
+  var rounds = 2
   var roundNum = 0;
   var songs = []
   Song.aggregate(
@@ -349,9 +349,7 @@ router.post("/newMessage", (req, res) => {
       messageText = req.body.userName + " guessed the title!"
       style="Correct Answer"
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
-      if(willFinish) {
-        finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
-      }
+      
      
       Room.findOne({roomID: req.body.roomID}).then((room) => {
         let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
@@ -366,9 +364,14 @@ router.post("/newMessage", (req, res) => {
         })
         data.push(newEntry)
         room.data = data 
-        room.save()
+        room.save().then(() => {
+          if(willFinish) {
+            finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
+            socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
 
-        socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
+          }
+        })
+
 
       })
     }
