@@ -68,6 +68,8 @@ class App extends Component {
     socket.on('connect', () => {
       this.setState({socketid: socket.id})
     });
+
+    
     socket.on('newMessage', (message) => {
       let newChat  = this.state.chat;
       newChat.push(message)
@@ -81,17 +83,20 @@ class App extends Component {
     this.setState({ userName: event.target.value });
   };
 
-  createRoom = () => {
+  createRoom = (roomID) => {
+    roomID = encodeURI(roomID)
+    if(roomID.includes("localhost") || roomID.includes("prty.herokuapp")) return 
+
     this.setState({didPlay: true})
     cookies.set('name', this.state.userName, {path: '/'})
     if(this.state.userName==="") {
       this.setState({userName: "Guest"+makeid(5)})
     }
-    let randomRoomID = Math.random().toString(36).substring(2, 15)
+    let randomRoomID = roomID
     post('api/createNewRoom', {roomID: randomRoomID}).then((res) => {
 
       this.setState({roomID: randomRoomID, didPlay: true}, () => {
-        if(window.location.href.includes("partyy.life")) {
+        if(!window.location.href.includes("localhost") && !window.location.href.includes("prty.herokuapp")) {
           window.location.href = ('partyy.life/'+randomRoomID);
         }
         else {

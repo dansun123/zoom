@@ -81,18 +81,6 @@ class Room extends Component {
             }
         }) 
         }
-
-        socket.on("reconnect", (attemptNumber) => {
-            console.log("After " + attemptNumber + " attempts, you reconnected")
-            post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: this.state.score}).then((data) => {
-                if(data.exists)
-                     this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
-                else {
-                    this.setState({isLoading: false, status: "doesNotExist"})
-                }
-            }) 
-            
-        })
        
 
         socket.on("removeUser", (user) => {
@@ -212,6 +200,11 @@ class Room extends Component {
             
         })
 
+        socket.on("reconnect", (attemptNumber) => {
+       
+            this.setState({refresh: true})
+        })
+
         socket.on("inactive", (data) => {
             if(data.userID === this.props.userID) {
                 this.setState({redirect: true})
@@ -234,10 +227,16 @@ class Room extends Component {
     render() {
         
         if(this.state.redirect) {
-            return <Redirect to="/" />
+            window.location.href = "/"
         }
         if(this.state.refresh) {
-            return <Redirect to={"/"+this.props.roomID} />
+            if(!window.location.href.includes("localhost") && !window.location.href.includes("prty.herokuapp")) {
+
+                 window.location.href =("/"+this.props.roomID)
+            }
+            else {
+                window.location.href =("partyy.live/"+this.props.roomID)
+            }
         }
         if(this.state.isLoading) {
             return <>
