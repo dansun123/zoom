@@ -74,7 +74,7 @@ class Room extends Component {
         }
     }
     componentDidMount() {
-        let rating = this.state.rating || cookies.get("rating") || 1000
+        let rating = this.state.rating || 1000
         if(this.props.socketid !== "") {
         post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0, rating: rating}).then((data) => {
             if(data.exists)
@@ -189,7 +189,8 @@ class Room extends Component {
                 answer: data.answer,
                 timeToStart: 3,
                 scoreHistory: data.scoreHistory,
-                leaderboard: true
+                leaderboard: true,
+                roomData: data.data
             })
             let newRating = 1000
             for(var j = 0; j<data.data.length; j++) {
@@ -201,7 +202,7 @@ class Room extends Component {
                 data: data.data,
                 rating: newRating,
             })
-            cookies.set("rating", newRating)
+            //cookies.set("rating", newRating)
         })
 
         socket.on("disconnect", () => {
@@ -223,7 +224,7 @@ class Room extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        let rating = this.state.rating || cookies.get("rating") || 1000
+        let rating = this.state.rating || 1000
         if((this.props.roomID !== prevProps.roomID) || (this.props.socketid !== prevProps.socketid)) {
             post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, rating: rating}).then((data) => {
                 if(data.exists)
@@ -370,7 +371,7 @@ class Room extends Component {
                 userName={this.props.userName} 
                 userID={this.props.userID} 
                 score={this.state.score}
-                rating = {cookies.get("rating") || 1000}
+                rating = {this.state.rating || 1000}
             />
             <Button fullWidth onClick={() => {
                         if(this.state.leaderboard) {
