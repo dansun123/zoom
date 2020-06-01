@@ -88,7 +88,7 @@ class App extends Component {
   createRoom = (roomID) => {
     let username = this.state.userName 
     if(username.length > 16) username = username.substring(0, 16)
-    roomID = encodeURI(roomID)
+    roomID = encodeURI(roomID).split('?').join('')
     if(username === "") username = "Guest"+makeid(5)
     this.setState({didPlay: true, userName: username})
     cookies.set('name', username, {path: '/'})
