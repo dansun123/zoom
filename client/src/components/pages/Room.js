@@ -53,16 +53,7 @@ class Room extends Component {
             endTime: new Date(),
             answered: false,
             startTime: new Date(),
-            song: {
-                title: "",
-                primaryArtist: "",
-                artUrl: "",
-                instrumentalUrl: "",
-                karaokeUrl: "",
-                songUrl: "",
-                youtubeUrl: "",
-                soundcloudUrl: ""
-            },
+            url: "",
             timeToStart: 3,
             roomData: [],
             redirect: false,
@@ -84,7 +75,7 @@ class Room extends Component {
         if(this.props.socketid !== "") {
         post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0, rating: rating}).then((data) => {
             if(data.exists)
-                 this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                 this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, url: data.url, startTime: data.startTime, endTime: data.endTime})
             else {
                 this.setState({isLoading: false, status: "doesNotExist"})
             }
@@ -133,7 +124,7 @@ class Room extends Component {
                 startTime: data.startTime, 
                 roomData: newdata,
                 roomAnswers: [],
-                song: data.song,
+                url: data.url,
                 score: 0,
                 roundNum: data.roundNum,
                 leaderboard: false
@@ -168,7 +159,7 @@ class Room extends Component {
                 status: "gameFinished", 
                 endTime: data.endTime, 
                 startTime: data.startTime, 
-                song: data.song,
+                url: data.url,
                 answer: data.answer,
                 timeToStart: 5,
                 
@@ -234,7 +225,7 @@ class Room extends Component {
         if((this.props.roomID !== prevProps.roomID) || (this.props.socketid !== prevProps.socketid)) {
             post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, rating: rating}).then((data) => {
                 if(data.exists)
-                    this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, song: data.song, startTime: data.startTime, endTime: data.endTime})
+                    this.setState({leaderboard: (data.status === "roundFinished" || data.status === "waiting"), scoreHistory: data.scoreHistory, roomID: data.roomID, roundNum: data.roundNum, roomData: data.roomData, status: data.status, isLoading: false, url: data.url, startTime: data.startTime, endTime: data.endTime})
                 else {
                     this.setState({isLoading: false, status: "doesNotExist"})
                 }
@@ -363,7 +354,7 @@ class Room extends Component {
                      
 
                     {<Box style={{height: (this.state.status === "inProgress" ? "240px" : "0px"), overflow: "scroll"}}>
-                <Music url = {this.state.song.instrumentalUrl ? this.state.song.instrumentalUrl: this.state.song.songUrl} visual={window.AudioContext ? true : false} pauseButton={window.AudioContext ? false : true} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
+                <Music url = {this.state.url} visual={window.AudioContext ? true : false} pauseButton={window.AudioContext ? false : true} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
                 </Box>} 
         {(this.state.status !== "inProgress") && (this.state.answer) ? 
             <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> 
@@ -376,7 +367,6 @@ class Room extends Component {
                 roomID={this.props.roomID} 
                 status={this.state.status} 
                 answered={this.state.answered} 
-                song={this.state.song} 
                 userName={this.props.userName} 
                 userID={this.props.userID} 
                 score={this.state.score}

@@ -27,7 +27,7 @@ class Chat extends React.Component {
       message: this.state.messageText, 
       roomID: this.props.roomID, 
       inGame: (this.props.status === "inProgress" && !this.props.answered) , 
-      title: this.props.song.title, score: this.props.score, 
+      score: this.props.score, 
       userID: this.props.userID, 
       userName: this.props.userName,
       rating: this.props.rating

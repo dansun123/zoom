@@ -56,6 +56,9 @@ router.post("/initsocket", (req, res) => {
 // | write your API methods below!|
 // |------------------------------|
 
+let getURL = (song) => {
+  return song.instrumentalUrl ? song.instrumentalUrl: song.songUrl
+}
 let clearOutInactives = () => {
   console.log("Clearing out inactives")
   Room.find({}).then((rooms) => {
@@ -151,7 +154,7 @@ router.post("/joinRoom", (req, res) => {
       scoreHistory.push({userID: req.body.userID, userName: req.body.userName, scores: [0, 0, 0], maxScore: 0})
       room.scoreHistory = scoreHistory
       room.save().then(() => {
-        res.send({exists: true, scoreHistory: room.scoreHistory, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, song: room.song, startTime:room.startTime, endTime: room.endTime})
+        res.send({exists: true, scoreHistory: room.scoreHistory, roundNum: room.roundNum, roomData: data, status: room.status, roomID: room._id, url: getURL(room.song), startTime:room.startTime, endTime: room.endTime})
       })
     }
     else {
@@ -271,7 +274,7 @@ let finishGame = (roomID, possibleRoundNum, gameID) => {
       })
   }
   else {
-    socket.getIo().emit("finishGame", {answer: songs[roundNum-1], roomID: roomID, song: songs[roundNum],  startTime: fromNow(5000), endTime: fromNow(35000)})
+    socket.getIo().emit("finishGame", {answer: songs[roundNum-1], roomID: roomID, url: getURL(songs[roundNum]),  startTime: fromNow(5000), endTime: fromNow(35000)})
       Room.findOne({roomID: roomID}).then((room) => {
         room.status = "gameFinished"
         room.song = songs[roundNum]
@@ -324,7 +327,7 @@ router.post("/startGame", (req, res) => {
                
                 room.save().then(() => {
                   console.log("startin timer")
-                  socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: songs[0], startTime: fromNow(3000), endTime: fromNow(33000), roundNum: 1})              
+                  socket.getIo().emit("startTimer", {roomID: req.body.roomID, url: getURL(songs[0]), startTime: fromNow(3000), endTime: fromNow(33000), roundNum: 1})              
                   finishGameMap[req.body.roomID] = {}
                   gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15), answered: 0}
                   setTimeout(() => {
@@ -368,22 +371,31 @@ router.post("/newMessage", (req, res) => {
   let messageText = req.body.message
   if(req.body.systemMessage) systemMessage = true
   else {
+    let roundNum = gameData[req.body.roomID]["roundNum"]
+    let title = gameData[req.body.roomID]["songs"][roundNum-1].title
     let curWaiting = (req.body.inGame ? gameData[req.body.roomID]["waitingOn"] : 0)
-    if((curWaiting >= 1) && req.body.inGame && ((similarity(messageText, req.body.title) > 0.7) || (similarity(messageText.toLowerCase().replace("fuck", "forget"), req.body.title) > 0.7))) {
+    if((curWaiting >= 1) && req.body.inGame && ((similarity(messageText, title) > 0.7) || (similarity(messageText.toLowerCase().replace("fuck", "forget"), title) > 0.7))) {
       
 
      
-      let willFinish = (curWaiting === 1)
       
+     
+      Room.findOne({roomID: req.body.roomID}).then((room) => {
+
+        let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
+
+        if(givenPoints > 0) {
+
+        let willFinish = (curWaiting === 1)
       systemMessage = true 
       messageText = req.body.userName + " guessed the title!"
       style="Correct Answer"
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
       let numAnswered = gameData[req.body.roomID]["answered"]
       gameData[req.body.roomID]["answered"] =  numAnswered+ 1 
-     
-      Room.findOne({roomID: req.body.roomID}).then((room) => {
-        let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
+
+
+       
         if(givenPoints < 0) givenPoints = 0
         //let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
         let points = 40 + Math.floor(givenPoints) + (numAnswered === 0 ? 30 : (numAnswered === 1 ? 15 : (numAnswered === 2 ? 5 : 0)))
@@ -405,7 +417,7 @@ router.post("/newMessage", (req, res) => {
 
         })
 
-
+      }
       })
     }
   }
