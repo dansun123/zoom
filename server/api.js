@@ -57,8 +57,10 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 let clearOutInactives = () => {
+  console.log("Clearing out inactives")
   Room.find({}).then((rooms) => {
     rooms.forEach((room) => {
+      if((room.status !== "waiting") && (room.status !== "roundFinished")) return;
       let toRemove = []
       let counter = 0
       room.data.forEach((entry) => {
@@ -86,7 +88,7 @@ let clearOutInactives = () => {
   })})
 }
 
-setInterval(clearOutInactives, 1000*60*30);
+//setInterval(clearOutInactives, 1000*60*30);
 
 router.post("/badSong", (req, res) => {
   // do nothing if user not logged in
@@ -189,6 +191,7 @@ let startGame = (roomID) => {
       let waitingOn = Math.ceil(1.0*total/2.0 - 0.001)
       gameData[roomID]["waitingOn"] = waitingOn
       
+      
       console.log("waitingOn:" + gameData[roomID].waitingOn + " roundnum" + gameData[roomID].roundNum)
     })
 
@@ -225,6 +228,7 @@ let updateUserRatings = (data) => {
 let finishGame = (roomID, possibleRoundNum, gameID) => {
 
   let obj = gameData[roomID]
+  gameData[roomID]["answered"] = 0
   let roundNum = obj.roundNum 
   if(possibleRoundNum !== -1) roundNum = possibleRoundNum
   let rounds = obj.rounds 
@@ -322,7 +326,7 @@ router.post("/startGame", (req, res) => {
                   console.log("startin timer")
                   socket.getIo().emit("startTimer", {roomID: req.body.roomID, song: songs[0], startTime: fromNow(3000), endTime: fromNow(33000), roundNum: 1})              
                   finishGameMap[req.body.roomID] = {}
-                  gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15)}
+                  gameData[req.body.roomID] = {roundNum: 1, rounds: rounds, songs: songs, gameID: Math.random().toString(36).substring(2, 15), answered: 0}
                   setTimeout(() => {
                     
                     Room.findOne({roomID: req.body.roomID}).then((room) => {
@@ -375,12 +379,14 @@ router.post("/newMessage", (req, res) => {
       messageText = req.body.userName + " guessed the title!"
       style="Correct Answer"
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
-      
+      let numAnswered = gameData[req.body.roomID]["answered"]
+      gameData[req.body.roomID]["answered"] =  numAnswered+ 1 
      
       Room.findOne({roomID: req.body.roomID}).then((room) => {
         let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
         if(givenPoints < 0) givenPoints = 0
-        let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
+        //let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
+        let points = 40 + Math.floor(givenPoints) + (numAnswered === 0 ? 30 : (numAnswered === 1 ? 15 : (numAnswered === 2 ? 5 : 0)))
         let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points, rating: Number(req.body.rating)}
 
         let data = room.data 
@@ -390,11 +396,13 @@ router.post("/newMessage", (req, res) => {
         data.push(newEntry)
         room.data = data 
         room.save().then(() => {
+          socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
+
           if(willFinish) {
             finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
-            socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
 
           }
+
         })
 
 

@@ -75,6 +75,11 @@ class Room extends Component {
         }
     }
     componentDidMount() {
+        setInterval(() => {
+            if(!socket.connected) {
+                this.setState({refresh: true})
+            }
+        }, 1000)
         let rating = this.state.rating || 1000
         if(this.props.socketid !== "") {
         post("/api/joinRoom", {socketid: this.props.socketid, roomID: this.props.roomID, userID: this.props.userID, userName: this.props.userName, score: 0, rating: rating}).then((data) => {
@@ -238,6 +243,7 @@ class Room extends Component {
     }
 
     render() {
+        
         
         if(this.state.redirect) {
             window.location.href = "/"
