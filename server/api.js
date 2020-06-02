@@ -57,8 +57,10 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 let clearOutInactives = () => {
+  console.log("Clearing out inactives")
   Room.find({}).then((rooms) => {
     rooms.forEach((room) => {
+      if((room.status !== "waiting") || (room.status !== "roundFinished")) return;
       let toRemove = []
       let counter = 0
       room.data.forEach((entry) => {
