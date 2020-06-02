@@ -203,6 +203,7 @@ let updateUserRatings = (data) => {
   for(var i=0; i<data.length; i++) {
     let user1 = data[i]
     let newUser = JSON.parse(JSON.stringify(user1))
+    let update = 0
     for(var j=0; j< data.length; j++){
       let user2 = data[j]
       let constant = 0
@@ -212,10 +213,9 @@ let updateUserRatings = (data) => {
         constant = 0.5
       }
       let p1 = 1.0 / (1.0 + Math.pow(10, (user2.rating - user1.rating) / 400.0));
-      let update = (k * (constant - p1)>0) ? 2*(k * (constant - p1)) : k * (constant - p1); 
-      newUser.rating = newUser.rating + update;
+      update += k * (constant - p1); 
     }
-    console.log(newUser)
+    newUser.rating += (update>0) ? 1.5*update : update;
     newUsers.push(newUser)
   }
   return newUsers

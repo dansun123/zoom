@@ -44,8 +44,8 @@ export default function ScorePage(props) {
     }
 
   <ListItemSecondaryAction>
-    {props.leaderboard ? <h4 style={{fontWeight: "900", color: nameColor}}>{((props.rating ? user.rating : (props.leaderboard ? user.maxScore : user.score)) || "0") + " "} </h4>
-    :   <h3 style={{fontWeight: "900", color: nameColor}}>{((props.rating ? user.rating : (props.leaderboard ? user.maxScore : user.score)) || "0") + " "} </h3>
+    {props.leaderboard ? <h4 style={{fontWeight: "900", color: nameColor}}>{((props.rating ? user.rating.toFixed(0) : (props.leaderboard ? user.maxScore : user.score)) || "0") + " "} </h4>
+    :   <h3 style={{fontWeight: "900", color: nameColor}}>{((props.rating ? user.rating.toFixed(0) : (props.leaderboard ? user.maxScore : user.score)) || "0") + " "} </h3>
   }
     </ListItemSecondaryAction>
     </ListItem>
