@@ -88,7 +88,7 @@ let clearOutInactives = () => {
   })})
 }
 
-setInterval(clearOutInactives, 1000*60*30);
+//setInterval(clearOutInactives, 1000*60*30);
 
 router.post("/badSong", (req, res) => {
   // do nothing if user not logged in
