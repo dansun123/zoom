@@ -216,6 +216,7 @@ let updateUserRatings = (data) => {
       update += k * (constant - p1); 
     }
     newUser.rating += (update>0) ? 1.5*update : update;
+    
     newUsers.push(newUser)
   }
   return newUsers
@@ -289,7 +290,7 @@ router.post("/startGame", (req, res) => {
   if(inProgressMap[req.body.roomID]) return 
   inProgressMap[req.body.roomID] = true 
   console.log("startGame")
-  var rounds = 2
+  var rounds = 5
   var roundNum = 0;
   var songs = []
   Song.aggregate(

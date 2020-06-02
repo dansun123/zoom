@@ -359,7 +359,7 @@ class Room extends Component {
                 <Music url = {this.state.song.instrumentalUrl ? this.state.song.instrumentalUrl: this.state.song.songUrl} visual={window.AudioContext ? true : false} pauseButton={window.AudioContext ? false : true} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
         </Box>} 
         {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> : <></>}
-            <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 10"}</h2>
+            <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 5"}</h2>
             <Chat 
                 endTime={this.state.endTime} 
                 messages={this.props.chat} 
