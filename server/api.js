@@ -393,11 +393,12 @@ router.post("/newMessage", (req, res) => {
         data.push(newEntry)
         room.data = data 
         room.save().then(() => {
+          socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
+
           if(willFinish) {
             finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
 
           }
-          socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
 
         })
 
