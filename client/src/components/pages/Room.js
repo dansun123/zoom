@@ -330,7 +330,6 @@ class Room extends Component {
         }
         let url = window.location.href
             if(url.charAt(url.length - 1) === '/') url += this.props.roomID
-        console.log(this.state.roomData)
         return (
             <>
                 
