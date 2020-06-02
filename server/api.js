@@ -381,7 +381,6 @@ router.post("/newMessage", (req, res) => {
         let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
         if(givenPoints < 0) givenPoints = 0
         let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
-        
         let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points, rating: Number(req.body.rating)}
 
         let data = room.data 

@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom'
 import instruments from "../../public/instruments.js"
 import sound from "../images/RadioWaves.png";
 import silent from "../images/RadioNoWaves.png";
+import logo from "../images/logo4.png";
 import Chat from '../modules/Chat.js';
 import Avatar from "@material-ui/core/Avatar";
 import AppBar from "@material-ui/core/AppBar";
@@ -357,8 +358,11 @@ class Room extends Component {
 
                     {<Box style={{height: (this.state.status === "inProgress" ? "240px" : "0px"), overflow: "scroll"}}>
                 <Music url = {this.state.song.instrumentalUrl ? this.state.song.instrumentalUrl: this.state.song.songUrl} visual={window.AudioContext ? true : false} pauseButton={window.AudioContext ? false : true} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
-        </Box>} 
-        {(this.state.status !== "inProgress") && (this.state.answer) ? <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> : <></>}
+                </Box>} 
+        {(this.state.status !== "inProgress") && (this.state.answer) ? 
+            <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> 
+            : (this.state.status === "inProgress" ? <></> :
+            <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src ={logo} style={{width: "300px",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}></img></Box>)}
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 5"}</h2>
             <Chat 
                 endTime={this.state.endTime} 
