@@ -395,9 +395,10 @@ router.post("/newMessage", (req, res) => {
         room.save().then(() => {
           if(willFinish) {
             finishGame(req.body.roomID, -1, gameData[req.body.roomID].gameID)
-            socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
 
           }
+          socket.getIo().emit("updateRoomData", {userID: req.body.userID, userName: req.body.userName, roomID: req.body.roomID, entry: newEntry, time: (30 - givenPoints).toFixed(3), points: points})
+
         })
 
 
