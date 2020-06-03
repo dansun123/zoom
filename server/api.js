@@ -376,7 +376,8 @@ router.post("/newMessage", (req, res) => {
     let roundNum = gameData[req.body.roomID]["roundNum"]
     let title = gameData[req.body.roomID]["songs"][roundNum-1].title
     let curWaiting = (req.body.inGame ? gameData[req.body.roomID]["waitingOn"] : 0)
-    if((curWaiting >= 1) && req.body.inGame && ((similarity(messageText, title) > 0.7) || (similarity(messageText.toLowerCase().replace("fuck", "forget"), title) > 0.7))) {
+    if((curWaiting >= 1) && req.body.inGame && ((similarity(messageText, title) > 0.7) || (similarity(messageText.toLowerCase().replace("fuck", "forget"), title) > 0.7) ||
+    (similarity(messageText.toLowerCase().replace(" and ", " & "), title) > 0.7))) {
       
       systemMessage = true 
       messageText = req.body.userName + " guessed the title!"
