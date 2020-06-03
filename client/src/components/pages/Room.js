@@ -66,6 +66,13 @@ class Room extends Component {
         }
     }
     componentDidMount() {
+        socket.on("connect", () => {
+            setInterval(() => {
+                if(!socket.connected) {
+                    this.setState({refresh: true})
+                }
+            }, 1000)
+        })
         setInterval(() => {
             if(!socket.connected) {
                 this.setState({refresh: true})
