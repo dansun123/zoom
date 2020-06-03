@@ -378,7 +378,9 @@ router.post("/newMessage", (req, res) => {
     let curWaiting = (req.body.inGame ? gameData[req.body.roomID]["waitingOn"] : 0)
     if((curWaiting >= 1) && req.body.inGame && ((similarity(messageText, title) > 0.7) || (similarity(messageText.toLowerCase().replace("fuck", "forget"), title) > 0.7))) {
       
-
+      systemMessage = true 
+      messageText = req.body.userName + " guessed the title!"
+      style="Correct Answer"
      
       
      
@@ -389,16 +391,14 @@ router.post("/newMessage", (req, res) => {
         if(givenPoints > 0) {
 
         let willFinish = (curWaiting === 1)
-      systemMessage = true 
-      messageText = req.body.userName + " guessed the title!"
-      style="Correct Answer"
+      
       gameData[req.body.roomID]["waitingOn"] = curWaiting - 1 
       let numAnswered = gameData[req.body.roomID]["answered"]
       gameData[req.body.roomID]["answered"] =  numAnswered+ 1 
 
 
        
-        if(givenPoints < 0) givenPoints = 0
+        //if(givenPoints < 0) givenPoints = 0
         //let points = Math.floor(Math.floor((req.body.points>=20 ? givenPoints-20: 0)+ givenPoints) + curWaiting*5 + 5)
         let points = 40 + Math.floor(givenPoints) + (numAnswered === 0 ? 30 : (numAnswered === 1 ? 15 : (numAnswered === 2 ? 5 : 0)))
         let newEntry = {userID: req.body.userID, userName: req.body.userName, score: req.body.score + points, rating: Number(req.body.rating)}
