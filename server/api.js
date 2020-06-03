@@ -69,6 +69,8 @@ let clearOutInactives = () => {
       room.data.forEach((entry) => {
         counter += 1
         if(!socket.getSocketFromUserID(entry.userID) || !socket.getSocketFromUserID(entry.userID).connected) {
+          if(!socket.getSocketFromUserID(entry.userID)) console.log("not even in there " + entry.userName);
+          else console.log("in there but not connecteed " + entry.userName)
           toRemove.push(entry.userID)
           socket.getIo().emit("removeUser", {userID: entry.userID, roomID: room.roomID});
           let message = new Message({
@@ -531,6 +533,7 @@ router.post("/songLink", (req, res) => {
 
 router.post("/songModify", (req, res) => {
   if(!process.env.password) {
+    console.log("no password")
     res.send({})
   } else {
     console.log("posted "+req.body.title)
@@ -557,7 +560,9 @@ router.post("/songModify", (req, res) => {
         soundcloudUrl: req.body.soundcloudUrl,
       })
       song1.save();
+     
     }
+    console.log("saved")
   })
   res.send({});
   }
