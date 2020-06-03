@@ -47,7 +47,7 @@ class SongQueue extends React.Component {
         })
       return (
       <Box>
-         <Box height={"220px"}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "scroll", color: "#678efd", fontWeight: "900",  display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
+         <Box height={"220px"}  style={{backgroundColor: "#F7F7F7", width: "100%", overflow: "auto", color: "#678efd", fontWeight: "900",  display: "flex", flexDirection: "column-reverse", marginBottom: "auto"}}>
             <List>{songQueue}</List>
             
         </Box>

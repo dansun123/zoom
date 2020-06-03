@@ -353,13 +353,13 @@ class Room extends Component {
    
                      
 
-                    {<Box style={{height: (this.state.status === "inProgress" ? "240px" : "0px"), overflow: "scroll"}}>
+                    {<Box style={{height: (this.state.status === "inProgress" ? "240px" : "0px"), overflow: "auto"}}>
                 <Music url = {this.state.url} visual={window.AudioContext ? true : false} pauseButton={window.AudioContext ? false : true} roomID = {this.props.roomID} autoplayMusic={this.state.status === "inProgress"} />
                 </Box>} 
         {(this.state.status !== "inProgress") && (this.state.answer) ? 
-            <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> 
+            <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "auto", justifyContent: "center", alignItems: "center"}}><img src = {this.state.answer.artUrl} height={"240px"} /></Box> 
             : (this.state.status === "inProgress" ? <></> :
-            <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}><img src ={logo} style={{width: "300px",  display: "flex", overflow: "scroll", justifyContent: "center", alignItems: "center"}}></img></Box>)}
+            <Box style={{height: "240px", width: "100%",  display: "flex", overflow: "auto", justifyContent: "center", alignItems: "center"}}><img src ={logo} style={{width: "300px",  display: "flex", overflow: "auto", justifyContent: "center", alignItems: "center"}}></img></Box>)}
             <h2 style={{display: "flex", justifyContent: "center"}}>{"Round " + this.state.roundNum + " of 5"}</h2>
             <Chat 
                 endTime={this.state.endTime} 

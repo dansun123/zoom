@@ -388,7 +388,7 @@ router.post("/newMessage", (req, res) => {
 
         let givenPoints =  Math.floor(((new Date(room.endTime)).getTime() - (new Date()).getTime()))/1000.0
 
-        if(givenPoints > 0) {
+        if((givenPoints > 0) && (room.status === "inProgress")) {
 
         let willFinish = (curWaiting === 1)
       
@@ -419,6 +419,21 @@ router.post("/newMessage", (req, res) => {
 
         })
 
+      }
+      else {
+        console.log("AAAAAHHHHAHAHAH submitted too late")
+        let newMessage = new Message({
+          sender: {userID: req.body.userID, userName: req.body.userName},
+          roomID: req.body.roomID, 
+          message: req.body.userName + " submitted too late :(",
+          systemMessage: true,
+          style: "message",
+        })
+      
+      
+      
+      
+        socket.getIo().emit("newMessage", newMessage)
       }
       })
     }

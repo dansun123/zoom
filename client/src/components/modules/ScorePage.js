@@ -82,13 +82,13 @@ export default function ScorePage(props) {
 
     return (
     <Grid container direction="row" style={{width: "100%", height: height}}>
-    <Box  style={{overflow: "scroll", height: "100%"}} width={props.withLeaderboard ? 4/11 : 3/11} >
+    <Box  style={{overflow: "auto", height: "100%"}} width={props.withLeaderboard ? 4/11 : 3/11} >
         <List>
           {scoreListElements}
         </List>
     </Box>
     {props.roomAnswers.length > 0 ? <Divider orientation="vertical" flexItem /> : <></>}
-    <Box  style={{overflow: "scroll", height: "100%"}} width={props.withLeaderboard ? 6/11 : 7/11} >
+    <Box  style={{overflow: "auto", height: "100%"}} width={props.withLeaderboard ? 6/11 : 7/11} >
         <List>
           {roomAnswerElements}
         </List>
@@ -98,7 +98,7 @@ export default function ScorePage(props) {
   }
 
   return (
-    <Box  style={{overflow: "scroll", height: height}} >
+    <Box  style={{overflow: "auto", height: height}} >
         <List>
           {scoreListElements}
         </List>
